@@ -10,6 +10,7 @@ fastapi
 uvicorn
 pydantic
 python-dotenv
+pandas
 streamlit
 Flask
 streamlit-aggrid
