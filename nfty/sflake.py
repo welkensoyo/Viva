@@ -1,8 +1,5 @@
 #https://docs.snowflake.com/developer-guide/python-connector/python-connector
 import traceback
-import arrow
-from pprint import pprint
-import snowflake.connector
 from snowflake.connector import connect, DictCursor
 
 
@@ -144,6 +141,7 @@ class API:
         nonnurses = q.format('''AND c.CG_DISCIPLINENAME NOT IN ('RN','LVN') ''')
         nurses = q.format('''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''')
         return self.fetchall(nurses), self.fetchall(nonnurses)
+
     def report(self, reportname):
         q = qry.get(reportname)
         if reportname == 'charts':

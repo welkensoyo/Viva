@@ -5,7 +5,7 @@ wsaccel
 urllib3==2.2.0
 certifi
 cryptography
-snowflake-connector-python
+snowflake-connector-python==3.11.0
 fastapi
 uvicorn
 pydantic
