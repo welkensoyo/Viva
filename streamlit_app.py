@@ -90,8 +90,8 @@ def app():
             x=alt.X('MONTH:O', sort=list(month_map.values()), title=None, scale=alt.Scale(nice=True)),
             y=alt.Y('value', title='Unbilled Hours'))
         bar += alt.Chart(unbilled).mark_rule(color='red').encode(y=alt.Y('mean(value):Q', title='Unbilled Hours'))
-        st.altair_chart(chart | chart2, use_container_width=True)
-        st.altair_chart(bar | chart2, use_container_width=True)
+        st.altair_chart(chart | chart2 | bar, use_container_width=True)
+        # st.altair_chart(bar, use_container_width=True)
 
 if __name__ == '__main__':
     app()
