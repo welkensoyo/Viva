@@ -74,7 +74,7 @@ def app():
                      7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
         # nurses = nurses[nurses['DISCIPLINE'].isin(['RN', 'LVN'])].groupby(nurses.columns.drop('DISCIPLINE').tolist()).size().reset_index().rename(columns={0: 'count'})
         billed = nurses.melt(id_vars='MONTH', value_vars=['HOURS_THIS_YEAR', 'HOURS_LAST_YEAR'])
-        ot = nurses.melt(id_vars='MONTH', value_vars=['OT_PERCENTAGE_THIS_YEAR', 'OT_PERCENTAGE_LAST_YEAR'])
+        ot = nurses.melt(id_vars='MONTH', value_vars=['OT_%_THIS_YEAR', 'OT_%_LAST_YEAR'])
         unbilled = nurses.melt(id_vars='MONTH', value_vars=['UN_BILLED_THIS_YEAR'])
         billed['MONTH'] = billed['MONTH'].map(month_map)
         ot['MONTH'] = ot['MONTH'].map(month_map)
