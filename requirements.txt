@@ -14,4 +14,3 @@ pandas
 streamlit
 Flask
 streamlit-aggrid
-python-quickbooks
