@@ -65,20 +65,8 @@ try:
 except:
     pass
 
-quickbooks = SimpleNamespace(
-    clientid='ABmJrTvtExO7R8CYflFpeb7YFicmlZc4z272aONFf6I1XeCYA8',
-    secret='2NY3DfKqpsCJft6HDNdWLN8C1F0ACcBS17BLXZKu'
-)
 
-paycor = SimpleNamespace(
-    client='cbe097ae418b0d8b1850',
-    secret='lBpKk0yyzZmprMCmqARNxNqBlh0x6ugswhwdQ3AFFQ',
-    subscription='94624d3fedee456b86d51fdc7f89be9a',
-    appid='614036b7-2ba6-42b5-821b-bedcdd4ca86c'
-)
-
-anthropic_key = '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'
-os.environ["ANTHROPIC_API_KEY"] = anthropic_key
+# os.environ["ANTHROPIC_API_KEY"] = anthropic_key
 _c = {}
 
 PORT = 80
