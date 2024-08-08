@@ -2,7 +2,7 @@ ujson
 psycopg2-binary
 arrow
 wsaccel
-urllib3==2.2.0
+urllib3
 certifi
 cryptography
 snowflake-connector-python==3.11.0
