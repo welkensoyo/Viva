@@ -1,8 +1,9 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+import pprint
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
-from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index
+from nfty.sflake import API as sflake_API, report_dict, d_cols, date_cols, column_defs as cdefs, create_month_year_index
 from pandas.tseries.offsets import DateOffset
 import arrow
 
@@ -29,6 +30,9 @@ def app():
         </style>
     """, unsafe_allow_html=True)
 
+    # if st.button("Show Grid State"):
+    #     st.write(pprint.pformat(st.session_state.get("_grid_state", {})))
+
     # Convert the list into a pandas DataFrame
     report_select = st.sidebar.selectbox(
         "Select Report",
@@ -42,6 +46,10 @@ def app():
         for d in d_cols:
             if d in df.columns:
                 gb.configure_column(d, type=['numericColumn', 'numberColumnFilter', 'customNumericFormat'], precision=2)
+        for d in date_cols:
+            if d in df.columns:
+                df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
+                gb.configure_column(d, type='dateColumn')
         if 'YEAR' in df.columns:
             df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
 
@@ -50,6 +58,9 @@ def app():
             column_widths = {col: df[col].astype(str).map(len).max() for col in df.columns}
             columnDefs = [{'headerName': col, 'field': col, 'width': max(50, column_widths[col] * 6), 'editable': True} for col in df.columns]
             gb.configure_columns(columnDefs)
+        # for col in cdefs.get(report_select, []):
+        #     if col:
+        #         gb.configure_column(col)
 
         sidebar = {
             'toolPanels': ['filters', 'columns'],

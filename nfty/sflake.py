@@ -19,7 +19,7 @@ ORDER BY 3 DESC;''',
 
     'employee_metrics' : ''' 
 SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s.SCHEDULE_DATE,'MON') AS MONTH_ABBR,
-    --CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR) AS WEEK_OF,
+    DATE(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE))) AS WEEK_OF,
     c.CG_EMPLOYEEID AS USERID, c.CG_FIRSTNAME AS FIRSTNAME, c.CG_LASTNAME AS LASTNAME, c.CG_DISCIPLINENAME as DISCIPLINE,
     SUM(s.S_ACTUAL_HOURS) as HOURS,
     ROUND(SUM(IFF(s.IS_SCHEDULE_BILLED, s.S_ACTUAL_HOURS * S.S_BILL_RATE, 0)),2) AS BILLED,
@@ -31,10 +31,10 @@ FROM KANTIME_PROD_DB.HH_REPORT_DS.SCHEDULEMASTER_SVW AS s
 JOIN KANTIME_PROD_DB.HH_REPORT_DS.CAREGIVERMASTER_SVW as c ON s.S_CAREGIVER_ID = c.CG_EMPLOYEEID
 WHERE s.S_ACTUAL_END IS NOT NULL
 AND s.S_WEEKSTART >= DATEADD('month', -24, CURRENT_DATE())
-GROUP BY c.CG_EMPLOYEEID, c.CG_FIRSTNAME, c.CG_LASTNAME, c.CG_DISCIPLINENAME, 
---CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR), 
+GROUP BY c.CG_EMPLOYEEID, c.CG_FIRSTNAME, c.CG_LASTNAME, c.CG_DISCIPLINENAME,
+DATE(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE))),
 YEAR(s.SCHEDULE_DATE), MONTH(S.SCHEDULE_DATE), TO_CHAR(s.SCHEDULE_DATE,'MON')
-ORDER BY 3 DESC;''',
+ORDER BY 4 DESC;''',
 
     'new_patients': '''
 SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s.SCHEDULE_DATE,'MON') AS MONTH_ABBR,
@@ -67,7 +67,8 @@ ORDER BY 1 DESC, 2 DESC''',
     'nurse_hours': '''SELECT
     -- Formatted date string 'month-year'
     MONTH(s.SCHEDULE_DATE) as MONTH,
-    TO_CHAR(SCHEDULE_DATE,'MON') AS MONTH_ABBR,
+    TO_CHAR(SCHEDULE_DATE,'MON') AS MONTH_ABBR
+    , CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR) AS WEEK_OF,
     -- c.CG_DISCIPLINENAME as DISCIPLINE,
 
     -- Sum values for the current year
@@ -95,7 +96,7 @@ WHERE s.S_ACTUAL_END IS NOT NULL
 AND s.S_ACTUAL_END >= DATEADD('year', -2, DATE_TRUNC('year', CURRENT_DATE))
 {}
 -- GROUP BY Discipline and 'month-year' of the current and previous years
-GROUP BY  MONTH(s.SCHEDULE_DATE), TO_CHAR(SCHEDULE_DATE,'MON') --c.CG_DISCIPLINENAME,
+GROUP BY  MONTH(s.SCHEDULE_DATE), TO_CHAR(SCHEDULE_DATE,'MON'), CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR) --c.CG_DISCIPLINENAME,
 ORDER BY 1 DESC;''',
     "acuity": '''SELECT a.YEAR, b.YEAR_LAST, a.MONTH, UPPER(a.MONTH_ABBR) as MONTH_ABBR, a.LOW_HOURS, a.HIGH_HOURS, a.HOURS, a.HIGH_HOURS/a.HOURS * 100 as "HIGH_ACUITY_%",
 b.HIGH_HOURS/b.HOURS * 100 AS "PRIOR_YEAR_%", b.LOW_HOURS AS PRIOR_YEAR_LOW_HOURS, b.HIGH_HOURS AS PRIOR_YEAR_HIGH_HOURS, b.HOURS AS PRIOR_YEAR_HOURS
@@ -137,7 +138,16 @@ report_dict = {
     "Acuity": 'acuity'
 }
 
+column_defs = {
+    'Employee Metrics':[
+    {'headerName': 'YEAR', 'field': 'YEAR', 'enableRowGroup': True, 'rowGroup': True, "showRowGroups": True},
+    {'headerName': 'MONTH', 'field': 'MONTH', 'enableRowGroup': True, 'rowGroup': True, "showRowGroups": True},
+    {'headerName': 'WEEK_OF', 'field': 'WEEK_OF', 'enableRowGroup': True, 'rowGroup': True, "showRowGroups": True},
+    ],
+}
+
 d_cols = ('HOURS', 'BILLED', 'TOTAL' )
+date_cols = ('WEEK_OF', 'DAY')
 
 class API:
     def __init__(self):
@@ -175,8 +185,8 @@ class API:
 
     def charts(self):
         q = qry.get('nurse_hours')
-        nonnurses = q.format('''AND c.CG_DISCIPLINENAME NOT IN ('RN','LVN') ''')
-        nurses = q.format('''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''')
+        nonnurses = q.format('', ''''AND c.CG_DISCIPLINENAME NOT IN ('RN','LVN') ''').replace(", CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR)", '').replace(' AS WEEK_OF', '')
+        nurses = q.format('',''''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''').replace(", CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR)", '').replace(' AS WEEK_OF', '')
         acuity = qry.get('acuity')
         return self.fetchall(nurses), self.fetchall(nonnurses), self.fetchall(acuity)
 
