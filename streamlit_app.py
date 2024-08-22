@@ -4,6 +4,7 @@ import pandas as pd
 import pprint
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from nfty.sflake import API as sflake_API, report_dict, d_cols, date_cols, column_defs as cdefs, create_month_year_index
+from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import DateOffset
 import arrow
 
@@ -104,7 +105,7 @@ def app():
         acuity_chart += alt.Chart(acuity_compared).mark_point().encode(x=alt.X('MONTH_ABBR:O', sort=mvals, title=None), y=alt.Y('value', title='Acuity %'), color='variable')
         current_month = pd.to_datetime('today').month
         last_month = current_month - 1 if current_month != 1 else 12
-        unbilled = unbilled[unbilled['MONTH'] <= last_month]
+        unbilled = unbilled[unbilled['MONTH'] <= last_month-1]
         unbilled['MONTH'] = unbilled['MONTH'].map(month_map)
         bar = alt.Chart(unbilled).mark_bar(width=10).encode(
             x=alt.X('MONTH:O', sort=list(month_map.values()), title=None, scale=alt.Scale(nice=True)),
