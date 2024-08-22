@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 import pprint
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
-from nfty.sflake import API as sflake_API, report_dict, d_cols, date_cols, column_defs as cdefs, create_month_year_index
+from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index
 from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import DateOffset
 import arrow
@@ -41,24 +41,30 @@ def app():
     )
 
     if 'chart' not in report_select.lower():
-        df = load_report(report_dict[report_select])
+        df = load_report(report_dict[report_select].get('name'))
         gb = GridOptionsBuilder.from_dataframe(df)
-        gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc='sum', editable=True)
-        for d in d_cols:
-            if d in df.columns:
-                gb.configure_column(d, type=['numericColumn', 'numberColumnFilter', 'customNumericFormat'], precision=2)
-        for d in date_cols:
-            if d in df.columns:
-                df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
-                gb.configure_column(d, type='dateColumn')
+        gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True, enableRangeSelection=True, filterable=True)
+        for d in df.columns:
+            print(d, df[d].dtype)
+            if d in d_cols:
+                if d_cols[d] == 'SET':
+                    gb.configure_column(field=d, filter='agSetColumnFilter')
+                if d_cols[d] == 'DATE':
+                    df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
+                    gb.configure_column(field=d, type='dateColumn', filter=True)
+                if d_cols[d] == 'NOFILTER':
+                    gb.configure_column(field=d, filter=False)
+            elif df[d].dtype in ('int64', 'float64'):
+                gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum')
+            else:
+                gb.configure_column(field=d, filter='agMultiColumnFilter')
         if 'YEAR' in df.columns:
             df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
-
+        resize = params.get('resize') or report_dict[report_select].get('resize')
         # In Case you want to autosize the columns instead
-        if params.get('resize'):
+        if resize:
             column_widths = {col: df[col].astype(str).map(len).max() for col in df.columns}
-            columnDefs = [{'headerName': col, 'field': col, 'width': max(50, column_widths[col] * 6), 'editable': True} for col in df.columns]
-            gb.configure_columns(columnDefs)
+            gb.configure_columns([{'headerName': col, 'field': col, 'width': max(50, column_widths[col] * 6), 'editable': True} for col in df.columns])
         # for col in cdefs.get(report_select, []):
         #     if col:
         #         gb.configure_column(col)
@@ -78,7 +84,7 @@ def app():
                width='100%',
                data_return_mode='as_input',
                update_mode='value_changed',
-               fit_columns_on_grid_load=False if params.get('resize') else True,
+               fit_columns_on_grid_load=False if resize else True,
                allow_unsafe_jscode=True,  # Set it to True to enable jsfunction
                enable_enterprise_modules=True,  # Set it to True to enable enterprise modules
                license_key='Using_this_AG_Grid_Enterprise_key_( AG-043994 )_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_( legal@ag-grid.com )___For_help_with_changing_this_key_please_contact_( info@ag-grid.com )___( Triple Play Pay )_is_granted_a_( Single Application )_Developer_License_for_the_application_( Triple Play Pay )_only_for_( 1 )_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_( Triple Play Pay )_need_to_be_licensed___( Triple Play Pay )_has_been_granted_a_Deployment_License_Add-on_for_( 1 )_Production_Environment___This_key_works_with_AG_Grid_Enterprise_versions_released_before_( 21 June 2024 )____[v2]_MTcxODkyNDQwMDAwMA==2715c856a3cb3ab5c966698c55c41fac'
