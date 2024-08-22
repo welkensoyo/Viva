@@ -1,12 +1,9 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
-import pprint
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index
-from dateutil.relativedelta import relativedelta
-from pandas.tseries.offsets import DateOffset
-import arrow
+
 
 @st.cache_data(ttl=60 * 60 * 24)
 def load_report(report='patients_seen'):
@@ -45,7 +42,6 @@ def app():
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True, enableRangeSelection=True, filterable=True)
         for d in df.columns:
-            print(d, df[d].dtype)
             if d in d_cols:
                 if d_cols[d] == 'SET':
                     gb.configure_column(field=d, filter='agSetColumnFilter')
