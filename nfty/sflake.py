@@ -14,6 +14,7 @@ report_dict = {
     "Acuity": {'name': 'acuity', 'resize': False},
     "PDN Payroll": {'name': 'payroll', 'resize': False},
     "OT Percentage": {'name': 'ot_percent', 'resize': False},
+    "Primary and Secondary Payor": {'name': 'payors', 'resize': True},
 }
 
 

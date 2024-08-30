@@ -236,7 +236,178 @@ GROUP BY c.CG_EMPLOYEEID, c.CG_FIRSTNAME, c.CG_LASTNAME, c.CG_DISCIPLINENAME,
 DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE),
 YEAR(s.SCHEDULE_DATE), MONTH(S.SCHEDULE_DATE), TO_CHAR(s.SCHEDULE_DATE,'MON'), u.CLIENT_ID, u.CLIENT_FIRST_NAME, u.CLIENT_LAST_NAME,
 sc.SERVICE_TYPE, sc.SEVICE_CODE,     a.AUTH_WEEKLY_LIMIT,a.AUTH_MONTHLY_LIMIT,a.AUTH_UNUSEDUNITS,a.AUTH_TOTALUNITS
-ORDER BY 4 DESC;'''
+ORDER BY 4 DESC;''',
+    'payors': '''
+SELECT
+    C.CLIENT_PATIENT_ID,
+    C.CLIENT_FIRST_NAME,
+    C.CLIENT_LAST_NAME,
+    T.*
+FROM
+    (
+        select
+            P.PS_NAME Prm_Payer,
+            P_S.PS_NAME Sec_Payer,
+            A.*
+        from
+            (
+                Select
+                    Sec_Claim.ClientID,
+                    prm_claim.Prm_InvoiceNo,
+                    prm_Claim.Prm_ClaimID,
+                    prm_Claim.Prm_Claim_Amount,
+                    prm_Claim.Prm_ExpectedAmount,
+                    prm_Claim.Prm_VisitDate,
+                    prm_Claim.Prm_Claim_PaidAmount,
+                    prm_Claim.prm_payerID,
+                    prm_Claim.Prm_isMerged,
+                    prm_Claim.Prm_IsParent,
+                    prm_Claim.Prm_VisitID,
+                    prm_Claim.Prm_ChildVisitID,
+                    prm_Claim.Prm_LineItemAmount,
+                    prm_Claim.Prm_LineItemPaidAmount,
+                    prm_Claim.Prm_LineItemID,
+                    prm_Claim.prm_ParentLineItemID,
+                    prm_Claim.Prm_Visitserviceid,
+                    prm_Claim.Prm_Balance,
+                    sec_claim.sec_InvoiceNo,
+                    sec_Claim.sec_ClaimID,
+                    sec_Claim.Sec_Claim_Amount,
+                    sec_Claim.sec_ExpectedAmount,
+                    sec_Claim.sec_VisitDate,
+                    sec_Claim.Sec_Claim_PaidAmount,
+                    sec_Claim.sec_payerID,
+                    sec_Claim.sec_isMerged,
+                    sec_Claim.sec_IsParent,
+                    sec_Claim.sec_VisitID,
+                    sec_Claim.sec_ChildVisitID,
+                    sec_Claim.sec_LineItemAmount,
+                    sec_Claim.sec_LineItemPaidAmount,
+                    sec_Claim.sec_LineItemID,
+                    sec_Claim.sec_ParentLineItemID,
+                    sec_Claim.sec_Visitserviceid,
+                    sec_Claim.sec_Balance,
+                    IsSecondary,
+                    IsTransferCopay
+                from
+                    (
+                        select
+                            CM.CLIENT_ID ClientID,
+                            CM.INVOICE_NUMBER as Sec_InvoiceNo,
+                            CM.CLAIM_PARENT_CLAIMID as Prm_ClaimID,
+                            CM.PAYERSOURCE_ID Sec_PayerID,
+                            CM.CLAIM_ID as Sec_ClaimID,
+                            CM.CLAIM_TOTALAMOUNT as Sec_Claim_Amount,
+                            CM.CLAIM_CONTRACTUAL_AMOUNT as Sec_ExpectedAmount,
+                            IFNULL(CM.CLAIM_PAIDAMOUNT, 0) as Sec_Claim_PaidAmount,
+                            Cm.CLAIM_BALANCE as Sec_Balance,
+                            CDM.CD_SCHEDULE_DATE Sec_VisitDate,
+                            IFNULL(CDM.CD_SCHEDULE_ID, 0) as Sec_VisitID,
+                            CDM.CD_CLAIM_DETAIL_ID Sec_LineItemID,
+                            IFNULL(CDM.CD_CHILD_SCHEDULE_ID, 0) as Sec_ChildVisitID,
+                            CDM.CD_START_TIME Sec_VisitStartTime,
+                            IFNULL(CDM.CD_UNITS, 0) Sec_Unit,
+                            CDM.CD_END_TIME Sec_VisitEndTime,
+                            CDM.CD_BILLED_AMOUNT Sec_LineItemAmount,
+                            IFNULL(CDM.CD_PAIDAMOUNT, 0) Sec_LineItemPaidAmount,
+                            IFNULL(CDM.CD_IS_MERGED, false) as Sec_isMerged,
+                            IFNULL(CDM.CD_MERGEDCLAIM_DETAIL_ID, 0) sec_ParentLineItemID,
+                            case
+                                when IFNULL(CDM.CD_IS_MERGED, false) = false THEN true
+                                ELSE CASE
+                                    when IFNULL(CDM.CD_IS_MERGED, false) = true
+                                    and IFNULL(CDM.CD_MERGEDCLAIM_DETAIL_ID, 0) = 0 THEN true
+                                    ELSE false
+                                END
+                            END as Sec_IsParent,
+                            CDM.CD_SERVICE_CODE_ID as Sec_Visitserviceid,
+                            IFNULL(CM.CLAIM_IS_SECONDARY, false) IsSecondary,
+                            IFNULL(CM.CLAIM_IS_TRANSFERRED_COPAY, false) IsTransferCopay
+                        from
+                            KANTIME_PROD_DB.HH_REPORT_DS.CLAIMSMASTER_SVW CM
+                            JOIN KANTIME_PROD_DB.HH_REPORT_DS.CLAIMDETAILS_SVW CDM on CM.CLAIM_ID = CDM.CD_CLAIM_ID
+                        where
+                            CM.CLAIM_STATUS != 'Deleted'
+                            and (
+                                (CM.CLAIM_IS_SECONDARY = true)
+                                or CM.CLAIM_IS_TRANSFERRED_COPAY = true
+                            ) -- and ((ISNULL(CDM.CD_IS_MERGED,0)=0) OR ((ISNULL(CDM.CD_IS_MERGED,0)=1) and ISNULL(CDM.CD_MERGEDCLAIM_DETAIL_ID,0)=0))
+                    ) as Sec_Claim
+                    JOIN (
+                        select
+                            CM.INVOICE_NUMBER as Prm_InvoiceNo,
+                            CM.CLAIM_ID as Prm_ClaimID,
+                            CM.PAYERSOURCE_ID Prm_PayerID,
+                            IFNULL(CM.CLAIM_TOTALAMOUNT, 0) as Prm_Claim_Amount,
+                            CM.CLAIM_CONTRACTUAL_AMOUNT as Prm_ExpectedAmount,
+                            IFNULL(CM.CLAIM_PAIDAMOUNT, 0) as Prm_Claim_PaidAmount,
+                            Cm.CLAIM_BALANCE as Prm_Balance,
+                            CDM.CD_SCHEDULE_DATE Prm_VisitDate,
+                            IFNULL(CDM.CD_SCHEDULE_ID, 0) as Prm_VisitID,
+                            CDM.CD_CLAIM_DETAIL_ID Prm_LineItemID,
+                            IFNULL(CDM.CD_CHILD_SCHEDULE_ID, 0) as Prm_ChildVisitID,
+                            CDM.CD_START_TIME Prm_VisitStartTime,
+                            IFNULL(CDM.CD_UNITS, 0) Prm_Unit,
+                            CDM.CD_END_TIME Prm_VisitEndTime,
+                            CDM.CD_BILLED_AMOUNT Prm_LineItemAmount,
+                            IFNULL(CDM.CD_PAIDAMOUNT, 0) Prm_LineItemPaidAmount,
+                            IFNULL(CDM.CD_IS_MERGED, false) as Prm_isMerged,
+                            IFNULL(CDM.CD_MERGEDCLAIM_DETAIL_ID, 0) prm_ParentLineItemID,
+                            case
+                                when IFNULL(CDM.CD_IS_MERGED, false) = false THEN true
+                                ELSE CASE
+                                    when IFNULL(CDM.CD_IS_MERGED, false) = true
+                                    and IFNULL(CDM.CD_MERGEDCLAIM_DETAIL_ID, 0) = 0 THEN true
+                                    ELSE false
+                                END
+                            END as Prm_IsParent,
+                            CDM.CD_SERVICE_CODE_ID as Prm_Visitserviceid
+                        from
+                            KANTIME_PROD_DB.HH_REPORT_DS.CLAIMSMASTER_SVW SECCLM
+                            inner join KANTIME_PROD_DB.HH_REPORT_DS.CLAIMSMASTER_SVW CM ON SECCLM.CLAIM_PARENT_CLAIMID = CM.CLAIM_ID
+                            inner join KANTIME_PROD_DB.HH_REPORT_DS.CLAIMDETAILS_SVW CDM on CM.CLAIM_ID = CDM.CD_CLAIM_ID
+                        where
+                            CM.CLAIM_STATUS != 'Deleted'
+                            and SECCLM.CLAIM_STATUS != 'Deleted'
+                            and (
+                                (SECCLM.CLAIM_IS_SECONDARY = true)
+                                or SECCLM.CLAIM_IS_TRANSFERRED_COPAY = true
+                            ) -- and ((ISNULL(CDM.isMerged,0)=0) OR ((ISNULL(CDM.isMerged,0)=1) and ISNULL(CDM.MergedClaimDetailID,0)=0))
+                    ) as prm_Claim on Sec_Claim.Prm_ClaimID = prm_Claim.Prm_ClaimID
+                    and (
+                        (
+                            (Sec_Claim.Sec_VisitID = prm_Claim.Prm_VisitID)
+                            AND (
+                                Sec_Claim.Sec_ChildVisitID = prm_Claim.Prm_ChildVisitID
+                            )
+                            AND (
+                                (
+                                    Sec_isMerged = false
+                                    and Prm_isMerged = false
+                                )
+                                OR (
+                                    Sec_isMerged = true
+                                    and Sec_IsParent = false
+                                    and Prm_isMerged = true
+                                    and Prm_IsParent = false
+                                )
+                            )
+                        )
+                        OR (
+                            Sec_isMerged = true
+                            and Sec_IsParent = true
+                            and Prm_IsParent = true
+                            and Prm_isMerged = true
+                            and (prm_Claim.Prm_VisitDate = Sec_Claim.Sec_VisitDate)
+                            and (prm_Claim.Prm_Unit = Sec_Claim.Sec_Unit)
+                        )
+                    )
+                    --where Sec_IsParent=true
+            ) A
+            left join KANTIME_PROD_DB.HH_REPORT_DS.PAYMENTSOURCEMASTER_SVW P on A.Prm_PayerID = P.PS_PAYERSOURCEID
+            left join KANTIME_PROD_DB.HH_REPORT_DS.PAYMENTSOURCEMASTER_SVW P_S on A.Sec_PayerID = P_S.PS_PAYERSOURCEID
+    ) T
+    JOIN KANTIME_PROD_DB.HH_REPORT_DS.CLIENTMASTER_SVW C on T.ClientID = C.client_id'''
 
 }
 

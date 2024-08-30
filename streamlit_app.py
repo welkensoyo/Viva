@@ -5,7 +5,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index
 
 
-@st.cache_data(ttl=60 * 60 * 24)
+@st.cache_data(ttl=60 * 60 * 4)
 def load_report(report='patients_seen'):
     s = sflake_API()
     if report == 'charts':
