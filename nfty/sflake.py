@@ -3,6 +3,7 @@ import traceback
 from snowflake.connector import connect, DictCursor
 import arrow
 from nfty.queries.viva import qry
+from streamlit import cache_resource
 
 report_dict = {
     "Charts": {'name': 'charts', 'resize': False},
@@ -25,16 +26,23 @@ d_cols = {
     'DAY': 'DATE'
 }
 
+facility_names = ('All', 'Dallas', 'Austin', 'Ft Worth', 'Viva', 'Pediatric', 'Contracts', 'Richardson')
+
 class API:
-    def __init__(self):
-        self.conn = connect(
+    def __init__(self, where):
+        self.conn = self.create_connection()
+        self.schema = 'HH_REPORT_DS.'
+        self.where = where
+
+    @cache_resource
+    def create_connection(_self):
+        return connect(
             user='daas_reader@vivapeds.com',
             password='S8cuNRnbWJ',
             account='kantime-kt_viva',
             warehouse='VIVA_WH',
             database='KANTIME_PROD_DB'
         )
-        self.schema = 'HH_REPORT_DS.'
 
     def table_info(self, table):
         cur = self.conn.cursor()
@@ -50,6 +58,15 @@ class API:
             table = self.schema + table
         cur = self.conn.cursor(DictCursor)
         return [x for x in cur.execute(f'select * from {table}')]
+
+    def execute_query(self, query, params=None):
+        with self.conn.cursor() as cur:
+            cur.execute(query, params)
+            return cur.fetchall()
+
+    def fetchwhere(self, qry, where):
+        cur = self.conn.cursor(DictCursor)
+        return cur.execute(qry, (where,))
 
     def fetchall(self, qry):
         cur = self.conn.cursor(DictCursor)
@@ -70,8 +87,15 @@ class API:
         q = qry.get(reportname)
         if reportname == 'charts':
             q = q.format('''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''')
-        if not q:
+
+        if not q and not self.where:
             return self.fetchall(qry['patients_seen'])
+        if self.where:
+            if self.where == 'All':
+                return self.fetchall(q)
+            else:
+                return self.fetchwhere(q+' WHERE h.AGENCY_BRANCH_NAME = %s', where=self.where)
+
         return self.fetchall(q)
 
 def create_month_year_index():

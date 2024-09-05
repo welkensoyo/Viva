@@ -2,12 +2,12 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
-from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index
+from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index, facility_names
 
 
 @st.cache_data(ttl=60 * 60 * 4)
-def load_report(report='patients_seen'):
-    s = sflake_API()
+def load_report(report='patients_seen', where=None):
+    s = sflake_API(where=where)
     if report == 'charts':
         x = s.charts()
         return pd.json_normalize(x[0]), pd.json_normalize(x[1]), pd.json_normalize(x[2])
@@ -38,7 +38,13 @@ def app():
     )
 
     if 'chart' not in report_select.lower():
-        df = load_report(report_dict[report_select].get('name'))
+        if report_select in('Primary and Secondary Payor',):
+            col1, col2 = st.columns([2, 2])
+            with col1:
+                selected_facility = st.selectbox("Select a Facility", facility_names)
+            df = load_report(report_dict[report_select].get('name'), where=selected_facility)
+        else:
+            df = load_report(report_dict[report_select].get('name'))
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True, enableRangeSelection=True, filterable=True)
         for d in df.columns:
