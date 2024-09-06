@@ -14,7 +14,19 @@ def load_report(report='patients_seen', where=None):
     return pd.json_normalize(s.report(report))
 
 
+def count_distinct(series):
+    return series.nunique()
+
+custom_agg_func_js = JsCode("""
+function customDistinctCount(params) {
+    const uniqueValues = new Set(params.values);
+    return uniqueValues.size;
+}
+""")
+
 def app():
+
+
     params = st.query_params
     st.set_page_config(layout="wide")
     # st.subheader('Viva')
@@ -48,6 +60,9 @@ def app():
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True, enableRangeSelection=True, filterable=True)
         for d in df.columns:
+            # if d =='USERID':
+            #     print('FOUND USERID')
+            #     gb.configure_column("USERID", rowGroup=True, enableRowGroup=True, aggFunc='distinct')
             if d in d_cols:
                 if d_cols[d] == 'SET':
                     gb.configure_column(field=d, filter='agSetColumnFilter')
@@ -77,11 +92,15 @@ def app():
         }
         gb.configure_side_bar(filters_panel=True, columns_panel=True, defaultToolPanel=sidebar['toolPanels'])
         gb.configure_side_bar(sidebar)
-        gridOptions = gb.build()
+        grid_options = gb.build()
+        grid_options['aggFuncs'] = {
+            'distinct': custom_agg_func_js
+        }
+
         # Call `load_report()` with the selected report name
         st.write(report_select)
         AgGrid(df,
-               gridOptions=gridOptions,
+               gridOptions=grid_options,
                height=600,
                width='100%',
                data_return_mode='as_input',
