@@ -17,16 +17,19 @@ def load_report(report='patients_seen', where=None):
 def count_distinct(series):
     return series.nunique()
 
-custom_agg_func_js = JsCode("""
+custom_agg_distinct_js = JsCode("""
 function customDistinctCount(params) {
     const uniqueValues = new Set(params.values);
     return uniqueValues.size;
 }
 """)
-
+custom_agg_sum_js = JsCode("""
+function customSum(params) {
+    const sum = params.values.reduce((total, value) => total + value, 0);
+    return Math.round(sum * 100) / 100;
+}
+""")
 def app():
-
-
     params = st.query_params
     st.set_page_config(layout="wide")
     # st.subheader('Viva')
@@ -60,9 +63,6 @@ def app():
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True, enableRangeSelection=True, filterable=True)
         for d in df.columns:
-            # if d =='USERID':
-            #     print('FOUND USERID')
-            #     gb.configure_column("USERID", rowGroup=True, enableRowGroup=True, aggFunc='distinct')
             if d in d_cols:
                 if d_cols[d] == 'SET':
                     gb.configure_column(field=d, filter='agSetColumnFilter')
@@ -72,9 +72,15 @@ def app():
                 if d_cols[d] == 'NOFILTER':
                     gb.configure_column(field=d, filter=False)
             elif df[d].dtype in ('int64', 'float64'):
-                gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum')
+                if d == 'USERID':
+                    gb.configure_column("USERID", aggFunc='distinct')
+                else:
+                    gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
             else:
                 gb.configure_column(field=d, filter='agMultiColumnFilter')
+            if d =='WEEK_END':
+                gb.configure_column("YEAR", rowGroup=True, enableRowGroup=True)
+                gb.configure_column("WEEK_END", rowGroup=True, enableRowGroup=True)
         if 'YEAR' in df.columns:
             df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
         resize = params.get('resize') or report_dict[report_select].get('resize')
@@ -94,7 +100,8 @@ def app():
         gb.configure_side_bar(sidebar)
         grid_options = gb.build()
         grid_options['aggFuncs'] = {
-            'distinct': custom_agg_func_js
+            'distinct': custom_agg_distinct_js,
+            'sum2d': custom_agg_sum_js
         }
 
         # Call `load_report()` with the selected report name
