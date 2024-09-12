@@ -13,10 +13,6 @@ def load_report(report='patients_seen', where=None):
         return pd.json_normalize(x[0]), pd.json_normalize(x[1]), pd.json_normalize(x[2])
     return pd.json_normalize(s.report(report))
 
-
-def count_distinct(series):
-    return series.nunique()
-
 custom_agg_distinct_js = JsCode("""
 function customDistinctCount(params) {
     const uniqueValues = new Set(params.values);
@@ -29,6 +25,7 @@ function customSum(params) {
     return Math.round(sum * 100) / 100;
 }
 """)
+
 def app():
     params = st.query_params
     st.set_page_config(layout="wide")
