@@ -16,6 +16,8 @@ report_dict = {
     "PDN Payroll": {'name': 'payroll', 'resize': False},
     "OT Percentage": {'name': 'ot_percent', 'resize': False},
     "Primary and Secondary Payor": {'name': 'payors', 'resize': True},
+    "GPM" : {'name': 'gpm', 'resize': True},
+    "Upload Report" : {'name': 'File', 'resize': True}
 }
 
 
@@ -95,7 +97,8 @@ class API:
                 return self.fetchall(q)
             else:
                 return self.fetchwhere(q+' WHERE h.AGENCY_BRANCH_NAME = %s', where=self.where)
-
+        if reportname == 'gpm':
+            return self.fetchall(q.format(arrow.now().floor('month').format('YYYY-MM-DD'), arrow.now().format('YYYY-MM-DD')))
         return self.fetchall(q)
 
 def create_month_year_index():
@@ -109,6 +112,9 @@ def create_month_year_index():
         arrow_obj = arrow_obj.shift(months=1)
 
     return index_dict
+
+def upload_file(name, df):
+    return name
 
 if __name__ == '__main__':
     from pprint import pprint
