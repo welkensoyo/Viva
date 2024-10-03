@@ -69,8 +69,8 @@ def display_report(report_select):
             if d_cols[d] == 'NOFILTER':
                 gb.configure_column(field=d, filter=False)
         elif df[d].dtype in ('int64', 'float64'):
-            if d == 'USERID':
-                gb.configure_column("USERID", aggFunc='distinct')
+            if d in ('USERID', 'CG_ID', 'CLIENT_ID'):
+                gb.configure_column(d, aggFunc='distinct')
             else:
                 gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
         else:
