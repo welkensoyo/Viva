@@ -150,6 +150,9 @@ def app():
     st.set_page_config(layout="wide")
     # st.subheader('Viva')
     st.sidebar.title("Viva Metrics")
+    if st.sidebar.button('Reset Cache'):
+        load_report.clear()
+
     st.markdown("""
         <style>
             #MainMenu {visibility: show;}

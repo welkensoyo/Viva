@@ -25,7 +25,13 @@ d_cols = {
     'YEAR': 'SET',
     'MONTH': 'SET',
     'WEEK_END': 'DATE',
-    'DAY': 'DATE'
+    'DAY': 'DATE',
+    'CLIENT_ID': 'NOFILTER',
+    'USER_ID': 'NOFILTER',
+    'CG_ID': 'NOFILTER',
+    'CLIENTID': 'NOFILTER',
+    'USERID': 'NOFILTER',
+    'CGID': 'NOFILTER',
 }
 
 facility_names = ('All', 'Dallas', 'Austin', 'Ft Worth', 'Viva', 'Pediatric', 'Contracts', 'Richardson')
