@@ -65,13 +65,12 @@ def display_report(report_select):
                 gb.configure_column(field=d, filter='agSetColumnFilter')
             if d_cols[d] == 'DATE':
                 df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
-                gb.configure_column(field=d, type='dateColumn', filter=True)
+                gb.configure_column(field=d, type='dateColumnFilter', filter=True)
             if d_cols[d] == 'NOFILTER':
                 gb.configure_column(field=d, filter=False)
+            if d_cols[d] == 'DISTINCT':
+                gb.configure_column(field=d, filter=False, aggFunc='distinct')
         elif df[d].dtype in ('int64', 'float64'):
-            if d in ('USERID', 'CG_ID', 'CLIENT_ID'):
-                gb.configure_column(d, aggFunc='distinct')
-            else:
                 gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
         else:
             gb.configure_column(field=d, filter='agMultiColumnFilter')

@@ -26,12 +26,12 @@ d_cols = {
     'MONTH': 'SET',
     'WEEK_END': 'DATE',
     'DAY': 'DATE',
-    'CLIENT_ID': 'NOFILTER',
-    'USER_ID': 'NOFILTER',
-    'CG_ID': 'NOFILTER',
-    'CLIENTID': 'NOFILTER',
-    'USERID': 'NOFILTER',
-    'CGID': 'NOFILTER',
+    'CLIENT_ID': 'DISTINCT',
+    'USER_ID': 'DISTINCT',
+    'CG_ID': 'DISTINCT',
+    'CLIENTID': 'DISTINCT',
+    'USERID': 'DISTINCT',
+    'CGID': 'DISTINCT',
 }
 
 facility_names = ('All', 'Dallas', 'Austin', 'Ft Worth', 'Viva', 'Pediatric', 'Contracts', 'Richardson')
