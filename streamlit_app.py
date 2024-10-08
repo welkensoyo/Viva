@@ -1,9 +1,15 @@
+import uuid
 import streamlit as st
 import altair as alt
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+import os
+import json
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode, DataReturnMode
 from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index, facility_names, upload_file
-
+import extra_streamlit_components as stx
+import datetime
+from pprint import pprint
+from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css
 
 @st.cache_data(ttl=60 * 60 * 12)
 def load_report(report='patients_seen', where=None):
@@ -20,18 +26,10 @@ def load_uploaded_file(uploaded_file):
         return pd.read_excel(uploaded_file)
     return None
 
-custom_agg_distinct_js = JsCode("""
-function customDistinctCount(params) {
-    const uniqueValues = new Set(params.values);
-    return uniqueValues.size;
-}
-""")
-custom_agg_sum_js = JsCode("""
-function customSum(params) {
-    const sum = params.values.reduce((total, value) => total + value, 0);
-    return Math.round(sum * 100) / 100;
-}
-""")
+
+def save_state(filepath, state):
+    with open(filepath, "w") as f:
+        json.dump(state, f)
 
 def u_file():
     uploaded_file = st.file_uploader("Upload a file", type=["csv", "xlsx"])
@@ -46,8 +44,15 @@ def u_file():
         if st.button('Submit'):
             st.write(upload_file(uploaded_file.name, df))
 
-def display_report(report_select):
-    params = st.query_params
+def display_report(report_select, STATE_FILE):
+    # Read saved grid state from file if it exists
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE, "r") as f:
+            saved_state = json.load(f) or {}
+    else:
+        saved_state = {}
+    # Restore saved state if it exists
+
     if report_select in ('Primary and Secondary Payor',):
         col1, col2 = st.columns([2, 2])
         with col1:
@@ -57,33 +62,40 @@ def display_report(report_select):
         return
     else:
         df = load_report(report_dict[report_select].get('name'))
+
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True, enableRangeSelection=True, filterable=True)
-    for d in df.columns:
-        if d in d_cols:
-            if d_cols[d] == 'SET':
-                gb.configure_column(field=d, filter='agSetColumnFilter')
-            if d_cols[d] == 'DATE':
-                df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
-                gb.configure_column(field=d, type='dateColumnFilter', filter=True)
-            if d_cols[d] == 'NOFILTER':
-                gb.configure_column(field=d, filter=False)
-            if d_cols[d] == 'DISTINCT':
-                gb.configure_column(field=d, filter=False, aggFunc='distinct')
-        elif df[d].dtype in ('int64', 'float64'):
-                gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
-        else:
-            gb.configure_column(field=d, filter='agMultiColumnFilter')
-        if d == 'WEEK_END':
-            gb.configure_column("YEAR", rowGroup=True, enableRowGroup=True)
-            gb.configure_column("WEEK_END", rowGroup=True, enableRowGroup=True)
-    if 'YEAR' in df.columns:
-        df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
-    resize = params.get('resize') or report_dict[report_select].get('resize')
+    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)
+    if state := saved_state.get(report_select, {}):
+        for c in state:
+            gb.configure_column(headerName= c.get('headerName', c.get('field')), field=c['field'], type= c['type'], filter= c.get('filter',''), aggFunc=c.get('aggFunc',''), sort=c.get('sort') , enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order',''), hide=c.get('hide', False))
+    else:
+        for d in df.columns:
+            if d in d_cols:
+                if d_cols[d] == 'SET':
+                    gb.configure_column(field=d, filter='agSetColumnFilter', enableRowGroup=True)
+                if d_cols[d] == 'DATE':
+                    df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
+                    gb.configure_column(field=d, type='dateColumnFilter', filter=True)
+                if d_cols[d] == 'NOFILTER':
+                    gb.configure_column(field=d, filter=False, enableRowGroup=True)
+                if d_cols[d] == 'DISTINCT':
+                    gb.configure_column(field=d, filter=False, aggFunc='distinct')
+            elif df[d].dtype in ('int64', 'float64'):
+                    gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
+            else:
+                gb.configure_column(field=d, filter='agMultiColumnFilter')
+            if d == 'WEEK_END':
+                gb.configure_column("YEAR", rowGroup=True, enableRowGroup=True)
+                gb.configure_column("WEEK_END", rowGroup=True, enableRowGroup=True)
+        if 'YEAR' in df.columns:
+            df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
+
+
     # In Case you want to autosize the columns instead
+    resize = st.query_params.get('resize') or report_dict[report_select].get('resize')
     if resize:
         column_widths = {col: df[col].astype(str).map(len).max() for col in df.columns}
-        gb.configure_columns([{'headerName': col, 'field': col, 'width': max(50, column_widths[col] * 6), 'editable': True} for col in df.columns])
+        gb.configure_columns([{'headerName': col, 'field': col, 'width': max(50, column_widths[col] * 6)} for col in df.columns])
     # for col in cdefs.get(report_select, []):
     #     if col:
     #         gb.configure_column(col)
@@ -99,21 +111,37 @@ def display_report(report_select):
         'distinct': custom_agg_distinct_js,
         'sum2d': custom_agg_sum_js
     }
-
     # Call `load_report()` with the selected report name
-    st.write(report_select)
-    AgGrid(df,
+    left, right = st.columns([3,1])
+    with left:
+        st.write(report_select)
+    with right:
+        if saved_state.get(report_select):
+            if st.button('Reset View'):
+                saved_state[report_select] = {}
+                save_state(STATE_FILE, saved_state)
+                st.rerun()
+
+    response = AgGrid(df,
            gridOptions=grid_options,
            height=600,
            width='100%',
-           data_return_mode='as_input',
-           update_mode='value_changed',
+           reload_data=True,
+           update_mode = GridUpdateMode.MANUAL,
+           data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
            fit_columns_on_grid_load=False if resize else True,
            allow_unsafe_jscode=True,  # Set it to True to enable jsfunction
            enable_enterprise_modules=True,  # Set it to True to enable enterprise modules
            license_key='Using_this_AG_Grid_Enterprise_key_( AG-043994 )_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_( legal@ag-grid.com )___For_help_with_changing_this_key_please_contact_( info@ag-grid.com )___( Triple Play Pay )_is_granted_a_( Single Application )_Developer_License_for_the_application_( Triple Play Pay )_only_for_( 1 )_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_( Triple Play Pay )_need_to_be_licensed___( Triple Play Pay )_has_been_granted_a_Deployment_License_Add-on_for_( 1 )_Production_Environment___This_key_works_with_AG_Grid_Enterprise_versions_released_before_( 21 June 2024 )____[v2]_MTcxODkyNDQwMDAwMA==2715c856a3cb3ab5c966698c55c41fac'
            # This should be your actual ag-grid license key
            )
+    # Save grid state when user makes changes
+    if response:
+        if response.get('grid_state'):
+            state = configure_grid_state(response['grid_options']['columnDefs'], response.get('grid_state') )
+            if state:
+                saved_state[report_select] = state
+                save_state(STATE_FILE, saved_state)
 
 def display_charts():
     nurses, nonurses, acuity = load_report('charts')
@@ -147,29 +175,44 @@ def display_charts():
 
 def app():
     st.set_page_config(layout="wide")
-    # st.subheader('Viva')
-    st.sidebar.title("Viva Metrics")
-    if st.sidebar.button('Reset Cache'):
-        load_report.clear()
-
-    st.markdown("""
+    st.markdown(r"""
         <style>
             #MainMenu {visibility: show;}
             .stDeployButton {display:none;}
             footer {visibility: hidden;}
             #stDecoration {display:none;}
+            }}
         </style>
     """, unsafe_allow_html=True)
+    st.markdown(
+        """
+            <style>
+                .appview-container .main .block-container {{
+                    padding-top: {padding_top}rem;
+                    padding-bottom: {padding_bottom}rem;
+                    }}
 
-    # if st.button("Show Grid State"):
-    #     st.write(pprint.pformat(st.session_state.get("_grid_state", {})))
+            </style>""".format(
+            padding_top=1, padding_bottom=1
+        ),
+        unsafe_allow_html=True,
+    )
+    cookie_manager = stx.CookieManager()
+    user = cookie_manager.cookies.get('user')
+    STATE_FILE = f"cached/{user}_grid_state.json"
+    if not user and 'ajs_anonymous_id' in cookie_manager.cookies:
+        cookie_manager.set(cookie='user',key='session_id', val=str(uuid.uuid4()), expires_at=datetime.datetime.now() + datetime.timedelta(days=100000))
+    # st.subheader('Viva')
+    st.sidebar.title("Viva Metrics")
+    if st.sidebar.button('Reset Cache'):
+        load_report.clear()
     report_select = st.sidebar.selectbox("Select Report", tuple(report_dict.keys()), )
     if 'chart' in report_select.lower():
         return display_charts()
     if 'upload report' in report_select.lower():
         return u_file()
     else:
-        return display_report(report_select)
+        return display_report(report_select, STATE_FILE)
 
 if __name__ == '__main__':
     app()

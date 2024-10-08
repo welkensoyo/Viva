@@ -24,6 +24,7 @@ report_dict = {
 d_cols = {
     'YEAR': 'SET',
     'MONTH': 'SET',
+    'YEAR_LAST': 'SET',
     'WEEK_END': 'DATE',
     'DAY': 'DATE',
     'CLIENT_ID': 'DISTINCT',
@@ -38,12 +39,17 @@ facility_names = ('All', 'Dallas', 'Austin', 'Ft Worth', 'Viva', 'Pediatric', 'C
 
 class API:
     def __init__(self, where):
-        self.conn = self.create_connection()
+        self.conn = connect(
+            user='daas_reader@vivapeds.com',
+            password='S8cuNRnbWJ',
+            account='kantime-kt_viva',
+            warehouse='VIVA_WH',
+            database='KANTIME_PROD_DB'
+        )
         self.schema = 'HH_REPORT_DS.'
         self.where = where
 
-    @cache_resource
-    def create_connection(_self):
+    def create_connection(self):
         return connect(
             user='daas_reader@vivapeds.com',
             password='S8cuNRnbWJ',
