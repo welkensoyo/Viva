@@ -187,7 +187,7 @@ def app():
     st.markdown(
         """
             <style>
-                .appview-container .main .block-container {{
+                .appview-container .stMain .block-container {{
                     padding-top: {padding_top}rem;
                     padding-bottom: {padding_bottom}rem;
                     }}
