@@ -25,6 +25,7 @@ d_cols = {
     'YEAR': 'SET',
     'MONTH': 'SET',
     'YEAR_LAST': 'SET',
+    'PERCENT_AUTH_USED':'SET',
     'WEEK_END': 'DATE',
     'DAY': 'DATE',
     'CLIENT_ID': 'DISTINCT',
