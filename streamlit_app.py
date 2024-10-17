@@ -27,7 +27,6 @@ def load_uploaded_file(uploaded_file):
         return pd.read_excel(uploaded_file)
     return None
 
-
 def save_state(filepath, state):
     with open(filepath, "w") as f:
         json.dump(state, f)
