@@ -2,6 +2,7 @@ from st_aggrid import JsCode
 from pprint import pprint
 
 def configure_grid_state(options, state):
+    # pprint(state)
     keys = (('aggregation', 'aggregationModel'), ('columnSizing', 'columnSizingModel'), ('sort', 'sortModel'))
     groups = state.get('rowGroup',{}).get('groupColIds',[])
     order = state.get('columnOrder',{}).get('orderedColIds',[])
@@ -31,6 +32,7 @@ def configure_grid_state(options, state):
             c['hide'] = True
         else:
             c['hide'] = False
+    options.append(state.get('rowGroupExpansion',{}).get('expandedRowGroupIds',[]))
     return options
 
 custom_agg_distinct_js = JsCode("""

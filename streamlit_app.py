@@ -63,12 +63,23 @@ def display_report(report_select, STATE_FILE):
         return
     else:
         df = load_report(report_dict[report_select].get('name'))
-
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)
-    if state := saved_state.get(report_select, {}):
+    expanded_groups = []
+    if state := saved_state.get(report_select, {}) or []:
+        expanded_groups = state.pop()
+        print(len(expanded_groups))
         for c in state:
-            gb.configure_column(headerName= c.get('headerName', c.get('field')), field=c['field'], type= c['type'], filter= c.get('filter',''), aggFunc=c.get('aggFunc',''), sort=c.get('sort') , enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order',''), hide=c.get('hide', False))
+            print(c)
+            if d := d_cols.get(c.get('field')):
+                gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
+                                    enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
+                if d == 'DATE':
+                    df[c['field']] = df[c['field']].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
+                    gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type='dateColumnFilter', filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
+                                        enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
+            else:
+                gb.configure_column(headerName= c.get('headerName', c.get('field')), field=c['field'], type= c['type'], filter= c.get('filter',''), aggFunc=c.get('aggFunc',''), sort=c.get('sort') , enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order',''), hide=c.get('hide', False), width=c.get('width',''))
     else:
         for d in df.columns:
             if d in d_cols:
@@ -93,7 +104,10 @@ def display_report(report_select, STATE_FILE):
 
 
     # In Case you want to autosize the columns instead
-    resize = st.query_params.get('resize') or report_dict[report_select].get('resize')
+    try:
+        resize = report_dict[report_select].get('resize')
+    except:
+        resize = False
     if resize:
         column_widths = {col: df[col].astype(str).map(len).max() for col in df.columns}
         gb.configure_columns([{'headerName': col, 'field': col, 'width': max(50, column_widths[col] * 6)} for col in df.columns])
@@ -107,11 +121,14 @@ def display_report(report_select, STATE_FILE):
     }
     gb.configure_side_bar(filters_panel=True, columns_panel=True, defaultToolPanel=sidebar['toolPanels'])
     gb.configure_side_bar(sidebar)
+    gb.configure_grid_options(groupDefaultExpanded= len(expanded_groups) or 1)
     grid_options = gb.build()
     grid_options['aggFuncs'] = {
         'distinct': custom_agg_distinct_js,
         'sum2d': custom_agg_sum_js
     }
+    # if expanded_groups:
+    #     grid_options.update({'rowGroupExpansion':{'expandedRowGroupIds': expanded_groups}})
     # Call `load_report()` with the selected report name
     left, right = st.columns([3,1])
     with left:
@@ -122,7 +139,7 @@ def display_report(report_select, STATE_FILE):
                 saved_state[report_select] = {}
                 save_state(STATE_FILE, saved_state)
                 st.rerun()
-
+    pprint(dict(grid_options))
     response = AgGrid(df,
            gridOptions=grid_options,
            height=600,
@@ -141,6 +158,7 @@ def display_report(report_select, STATE_FILE):
         if response.get('grid_state'):
             state = configure_grid_state(response['grid_options']['columnDefs'], response.get('grid_state') )
             if state:
+                st.success(f'Locked grid view for {report_select}')
                 saved_state[report_select] = state
                 save_state(STATE_FILE, saved_state)
 
