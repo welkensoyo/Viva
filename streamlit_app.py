@@ -68,9 +68,7 @@ def display_report(report_select, STATE_FILE):
     expanded_groups = []
     if state := saved_state.get(report_select, {}) or []:
         expanded_groups = state.pop()
-        print(len(expanded_groups))
         for c in state:
-            print(c)
             if d := d_cols.get(c.get('field')):
                 gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
                                     enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
@@ -139,7 +137,6 @@ def display_report(report_select, STATE_FILE):
                 saved_state[report_select] = {}
                 save_state(STATE_FILE, saved_state)
                 st.rerun()
-    pprint(dict(grid_options))
     response = AgGrid(df,
            gridOptions=grid_options,
            height=600,
