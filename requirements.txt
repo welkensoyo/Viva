@@ -15,3 +15,4 @@ streamlit
 streamlit-aggrid
 openpyxl
 extra-streamlit-components
+streamlit-option-menu

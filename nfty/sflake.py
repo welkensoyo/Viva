@@ -6,18 +6,18 @@ from nfty.queries.viva import qry
 from streamlit import cache_resource
 
 report_dict = {
-    "Charts": {'name': 'charts', 'resize': False},
-    "Employee Metrics": {'name': 'employee_metrics', 'resize': True},
-    "Patient Metrics": {'name': 'patient_metrics', 'resize': True},
-    "Patient Visits": {'name': 'patients_seen', 'resize': False},
-    "New Patients": {'name': 'new_patients', 'resize': False},
-    "Collections": {'name': 'collections', 'resize': False},
-    "Acuity": {'name': 'acuity', 'resize': False},
-    "PDN Payroll": {'name': 'payroll', 'resize': False},
-    "OT Percentage": {'name': 'ot_percent', 'resize': False},
-    "Primary and Secondary Payor": {'name': 'payors', 'resize': True},
-    "GPM" : {'name': 'gpm', 'resize': True},
-    "Upload Report" : {'name': 'File', 'resize': True}
+    "Charts": {'name': 'charts', 'resize': False, 'icon':'bar-chart'},
+    "Employee Metrics": {'name': 'employee_metrics', 'resize': True, 'icon':'table'},
+    "Patient Metrics": {'name': 'patient_metrics', 'resize': True, 'icon':'table'},
+    "Patient Visits": {'name': 'patients_seen', 'resize': False, 'icon':'table'},
+    "New Patients": {'name': 'new_patients', 'resize': False, 'icon':'table'},
+    "Collections": {'name': 'collections', 'resize': False, 'icon':'table'},
+    "Acuity": {'name': 'acuity', 'resize': False, 'icon':'table'},
+    "PDN Payroll": {'name': 'payroll', 'resize': False, 'icon':'table'},
+    "OT Percentage": {'name': 'ot_percent', 'resize': False, 'icon':'table'},
+    "Primary/Secondary Payor": {'name': 'payors', 'resize': True, 'icon':'table'},
+    "GPM" : {'name': 'gpm', 'resize': True, 'icon':'table'},
+    "Upload Report" : {'name': 'File', 'resize': True, 'icon':'upload'}
 }
 
 

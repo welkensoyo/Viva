@@ -7,6 +7,7 @@ import json
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode, DataReturnMode
 from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index, facility_names, upload_file
 import extra_streamlit_components as stx
+import streamlit_option_menu as sm
 import datetime
 from pprint import pprint
 from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css
@@ -203,10 +204,13 @@ def app():
     if not user and 'ajs_anonymous_id' in cookie_manager.cookies:
         cookie_manager.set(cookie='user',key='session_id', val=str(uuid.uuid4()), expires_at=datetime.datetime.now() + datetime.timedelta(days=100000))
     # st.subheader('Viva')
-    st.sidebar.title("Viva Metrics")
+    # st.sidebar.title("Viva Metrics")
     if st.sidebar.button('Reset Cache'):
         load_report.clear()
-    report_select = st.sidebar.selectbox("Select Report", tuple(report_dict.keys()), )
+    # report_select = st.sidebar.selectbox("Select Report", tuple(report_dict.keys()), )
+    with st.sidebar:
+        report_select = sm.option_menu("Viva Metrics", list(report_dict.keys()),
+        icons=[i['icon'] for i in report_dict.values()], menu_icon="file-spreadsheet-fill", default_index=0)
     if 'chart' in report_select.lower():
         return display_charts()
     if 'upload report' in report_select.lower():
