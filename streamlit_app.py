@@ -88,7 +88,7 @@ def display_report(report_select, STATE_FILE):
                 if d_cols[d] == 'NOFILTER':
                     gb.configure_column(field=d, filter=False, enableRowGroup=True)
                 if d_cols[d] == 'DISTINCT':
-                    gb.configure_column(field=d, filter=False, aggFunc='distinct')
+                    gb.configure_column(field=d, filter=True, aggFunc='distinct')
             elif df[d].dtype in ('int64', 'float64'):
                     gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
             else:
