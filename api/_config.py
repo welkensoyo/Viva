@@ -56,7 +56,7 @@ beakerconfig = {
 try:
     from gevent import socket
     HOST_NAME = socket.gethostname()
-    print(HOST_NAME)
+    # print(HOST_NAME)
 except:
     pass
 
@@ -82,5 +82,5 @@ if HOST_NAME.lower() in ("nfty", "djbartron-lap", "dereks-mbp"):
     systemoptions["loglevel"] = "DEBUG"
     systemoptions["compress"] = True
 
-print(sys.version)
-print(env)
+# print(sys.version)
+# print(env)

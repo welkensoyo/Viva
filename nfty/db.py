@@ -2,7 +2,7 @@ import gevent
 import psycopg2
 import logging
 import random
-import sys
+import sys, os
 import traceback
 from contextlib import contextmanager
 from gevent import sleep
@@ -11,7 +11,13 @@ from gevent.socket import wait_read, wait_write
 from psycopg2 import extensions, OperationalError
 from psycopg2.pool import ThreadedConnectionPool
 from nfty.njson import jc
-from api._config import psqldsn as dsn
+
+dsn = "host='nfty.asuscomm.com' port='5555' dbname='viva' user='nfty' password='Viva123!!' connect_timeout=2 application_name=VIVA"
+logger = logging.getLogger("ConfigLogger")
+env = os.getenv("ENV", 'localhost')
+if not dsn:
+    dsn = os.getenv("DSN")
+
 
 integer_types = (int,)
 log = logging.getLogger(__name__)
