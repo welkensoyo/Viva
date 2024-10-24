@@ -139,7 +139,7 @@ def display_report(report_select, STATE_FILE):
                 st.rerun()
     response = AgGrid(df,
         gridOptions=grid_options,
-        height=600,
+        height=665,
         width='100%',
         reload_data=True,
         update_mode = GridUpdateMode.MANUAL,
@@ -152,7 +152,7 @@ def display_report(report_select, STATE_FILE):
         custom_css = {"#gridToolBar": {"padding-bottom": "0px !important",},
                         ".ag-body-viewport-wrapper.ag-layout-normal": {  "overflow-x": "scroll", "overflow-y": "scroll"},
                         "::-webkit-scrollbar" : {"-webkit-appearance": "none","width": "8px", "height": "8px",},
-                        "::-webkit-scrollbar-thumb" : {"border-radius": "4px", "background-color": "rgba(0,0,0,.5)","box-shadow": "0 0 1px rgba(255,255,255,.5)",
+                        "::-webkit-scrollbar-thumb" : {"border-radius": "4px", "background-color": "rgba(0,0,0,.4)","box-shadow": "0 0 1px rgba(255,255,255,.4)",
                         }}
                             )
     # Save grid state when user makes changes
