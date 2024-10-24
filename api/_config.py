@@ -2,21 +2,16 @@ import os
 import sys
 import logging
 from types import SimpleNamespace
-from nfty.njson import b64d
+
+dsn = "host='nfty.asuscomm.com' port='5555' dbname='viva' user='nfty' password='Viva123!!' connect_timeout=2 application_name=VIVA"
 
 logger = logging.getLogger("ConfigLogger")
 
 HOST_NAME = ""
-env = os.getenv("dsn")
-
-if os.getenv("ENCODED_DATABASE_CREDENTIALS"):
-    dsn = os.getenv("ENCODED_DATABASE_CREDENTIALS")
-elif env == "nfty":
-    dsn = ''
-else:
-    env = "nfty"
-    dsn = ""
-dsn = b64d(dsn).decode()
+env = os.getenv("ENV", 'localhost')
+if not dsn:
+    dsn = os.getenv("DSN")
+# dsn = b64d(dsn).decode()
 psqldsn = dsn.replace('"', "'")
 
 _c = {"empty": True, "_": {}}

@@ -114,7 +114,7 @@ class ZipTime(object):
 
     @classmethod
     def cached(cls, hashcode, zipcode=None):
-        from nfty.cache import cache
+        from nfty.redis_cache import cache
 
         meta = cache.meta(hashcode, zipcode)
         return cls(meta)

@@ -13,14 +13,10 @@ from psycopg2.pool import ThreadedConnectionPool
 from nfty.njson import jc
 from api._config import psqldsn as dsn
 
-if sys.version_info[0] >= 3:
-    integer_types = (int,)
-else:
-    import __builtin__
-    integer_types = (int, __builtin__.long)
-
+integer_types = (int,)
 log = logging.getLogger(__name__)
 poolsize = 10
+dsn=dsn
 _pgpool = None
 
 def connect_listener():

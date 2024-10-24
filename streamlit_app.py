@@ -11,6 +11,7 @@ import streamlit_option_menu as sm
 import datetime
 from pprint import pprint
 from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css
+from nfty.cache import user_cache
 
 @st.cache_data(ttl=60 * 60 * 12)
 def load_report(report='patients_seen', where=None):
@@ -44,13 +45,11 @@ def u_file():
         if st.button('Submit'):
             st.write(upload_file(uploaded_file.name, df))
 
-def display_report(report_select, STATE_FILE):
+def display_report(report_select, id):
     # Read saved grid state from file if it exists
-    if os.path.exists(STATE_FILE):
-        with open(STATE_FILE, "r") as f:
-            saved_state = json.load(f) or {}
-    else:
-        saved_state = {}
+    saved_state = {}
+    if x:= user_cache(id):
+        saved_state = x[0]
     # Restore saved state if it exists
 
     if report_select in ('Primary and Secondary Payor',):
@@ -128,14 +127,18 @@ def display_report(report_select, STATE_FILE):
     # if expanded_groups:
     #     grid_options.update({'rowGroupExpansion':{'expandedRowGroupIds': expanded_groups}})
     # Call `load_report()` with the selected report name
-    left, right = st.columns([3,1])
+    left, right, = st.columns([3,1])
     with left:
         st.write(report_select)
+    # with center:
+    #     if st.button("Save View", key='streamlit-update-btn'):
+    #         # Execute JavaScript function to click all update buttons
+    #         st.markdown(click_update_button, unsafe_allow_html=True)
     with right:
         if saved_state.get(report_select):
             if st.button('Reset View'):
                 saved_state[report_select] = {}
-                save_state(STATE_FILE, saved_state)
+                user_cache(id, saved_state)
                 st.rerun()
     response = AgGrid(df,
         gridOptions=grid_options,
@@ -150,10 +153,23 @@ def display_report(report_select, STATE_FILE):
         license_key='Using_this_AG_Grid_Enterprise_key_( AG-043994 )_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_( legal@ag-grid.com )___For_help_with_changing_this_key_please_contact_( info@ag-grid.com )___( Triple Play Pay )_is_granted_a_( Single Application )_Developer_License_for_the_application_( Triple Play Pay )_only_for_( 1 )_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_( Triple Play Pay )_need_to_be_licensed___( Triple Play Pay )_has_been_granted_a_Deployment_License_Add-on_for_( 1 )_Production_Environment___This_key_works_with_AG_Grid_Enterprise_versions_released_before_( 21 June 2024 )____[v2]_MTcxODkyNDQwMDAwMA==2715c856a3cb3ab5c966698c55c41fac',
         # custom_css = {"#gridToolBar": {"padding-bottom": "0px !important",}}
         custom_css = {"#gridToolBar": {"padding-bottom": "0px !important",},
-                        ".ag-body-viewport-wrapper.ag-layout-normal": {  "overflow-x": "scroll", "overflow-y": "scroll"},
+                        ".ag-body-viewport-wrapper.ag-layout-normal": {  "overflow-x": "scroll", "overflow-y": "scroll", "padding-top":"27px"},
                         "::-webkit-scrollbar" : {"-webkit-appearance": "none","width": "8px", "height": "8px",},
-                        "::-webkit-scrollbar-thumb" : {"border-radius": "4px", "background-color": "rgba(0,0,0,.4)","box-shadow": "0 0 1px rgba(255,255,255,.4)",
-                        }}
+                        "::-webkit-scrollbar-thumb" : {"border-radius": "4px", "background-color": "rgba(0,0,0,.4)","box-shadow": "0 0 1px rgba(255,255,255,.4)",},
+                      "ag-root-wrapper":{"margin-top": "50px !important",},
+                      ".ag-cell-wrapper button": {
+                          "z-index": "9999",  # Ensure the button is on top
+                          "position": "relative",  # Avoid overlap issues
+                          "margin-top": "639px",
+                          "left": "calc(100% - 62px)",
+                          "color": "rgb(255,255,255,.6)",
+                          'border': '0',
+                          'background-color': 'rgb(0,0,0,.5)',
+                      },
+                      ".ag-cell-wrapper button:active, .ag-cell-wrapper button:focus": {
+                               "background-color":"rgb(255,255,255,.1)"
+                      },
+                      }
                             )
     # Save grid state when user makes changes
     if response:
@@ -162,7 +178,8 @@ def display_report(report_select, STATE_FILE):
             if state:
                 st.success(f'Locked grid view for {report_select}')
                 saved_state[report_select] = state
-                save_state(STATE_FILE, saved_state)
+                # save_state(STATE_FILE, saved_state)
+                user_cache(id, saved_state)
 
 def display_charts():
     nurses, nonurses, acuity = load_report('charts')
@@ -220,9 +237,10 @@ def app():
     )
     cookie_manager = stx.CookieManager()
     user = cookie_manager.cookies.get('user')
-    STATE_FILE = f"cached/{user}_grid_state.json"
+    # STATE_FILE = f"cached/{user}_grid_state.json"
     if not user and 'ajs_anonymous_id' in cookie_manager.cookies:
-        cookie_manager.set(cookie='user',key='session_id', val=str(uuid.uuid4()), expires_at=datetime.datetime.now() + datetime.timedelta(days=100000))
+        user = str(uuid.uuid4())
+        cookie_manager.set(cookie='user',key='session_id', val=user, expires_at=datetime.datetime.now() + datetime.timedelta(days=100000))
     # st.subheader('Viva')
     # st.sidebar.title("Viva Metrics")
     if st.sidebar.button('Reset Cache'):
@@ -236,7 +254,7 @@ def app():
     if 'upload report' in report_select.lower():
         return u_file()
     else:
-        return display_report(report_select, STATE_FILE)
+        return display_report(report_select, user)
 
 if __name__ == '__main__':
     app()
