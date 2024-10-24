@@ -16,3 +16,5 @@ streamlit-aggrid
 openpyxl
 extra-streamlit-components
 streamlit-option-menu
+gevent
+gevent-websocket
