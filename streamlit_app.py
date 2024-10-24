@@ -63,6 +63,7 @@ def display_report(report_select, STATE_FILE):
     else:
         df = load_report(report_dict[report_select].get('name'))
     gb = GridOptionsBuilder.from_dataframe(df)
+    # gb.configure_grid_options(alwaysShowHorizontalScroll=True, enableRangeSelection=True, pagination=True, paginationPageSize=10000, domLayout='normal')
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)
     expanded_groups = []
     if state := saved_state.get(report_select, {}) or []:
@@ -137,18 +138,23 @@ def display_report(report_select, STATE_FILE):
                 save_state(STATE_FILE, saved_state)
                 st.rerun()
     response = AgGrid(df,
-           gridOptions=grid_options,
-           height=600,
-           width='100%',
-           reload_data=True,
-           update_mode = GridUpdateMode.MANUAL,
-           data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
-           fit_columns_on_grid_load=False if resize else True,
-           allow_unsafe_jscode=True,  # Set it to True to enable jsfunction
-           enable_enterprise_modules=True,  # Set it to True to enable enterprise modules
-           license_key='Using_this_AG_Grid_Enterprise_key_( AG-043994 )_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_( legal@ag-grid.com )___For_help_with_changing_this_key_please_contact_( info@ag-grid.com )___( Triple Play Pay )_is_granted_a_( Single Application )_Developer_License_for_the_application_( Triple Play Pay )_only_for_( 1 )_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_( Triple Play Pay )_need_to_be_licensed___( Triple Play Pay )_has_been_granted_a_Deployment_License_Add-on_for_( 1 )_Production_Environment___This_key_works_with_AG_Grid_Enterprise_versions_released_before_( 21 June 2024 )____[v2]_MTcxODkyNDQwMDAwMA==2715c856a3cb3ab5c966698c55c41fac'
-           # This should be your actual ag-grid license key
-           )
+        gridOptions=grid_options,
+        height=600,
+        width='100%',
+        reload_data=True,
+        update_mode = GridUpdateMode.MANUAL,
+        data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+        fit_columns_on_grid_load=False if resize else True,
+        allow_unsafe_jscode=True,  # Set it to True to enable jsfunction
+        enable_enterprise_modules=True,  # Set it to True to enable enterprise modules
+        license_key='Using_this_AG_Grid_Enterprise_key_( AG-043994 )_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_( legal@ag-grid.com )___For_help_with_changing_this_key_please_contact_( info@ag-grid.com )___( Triple Play Pay )_is_granted_a_( Single Application )_Developer_License_for_the_application_( Triple Play Pay )_only_for_( 1 )_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_( Triple Play Pay )_need_to_be_licensed___( Triple Play Pay )_has_been_granted_a_Deployment_License_Add-on_for_( 1 )_Production_Environment___This_key_works_with_AG_Grid_Enterprise_versions_released_before_( 21 June 2024 )____[v2]_MTcxODkyNDQwMDAwMA==2715c856a3cb3ab5c966698c55c41fac',
+        # custom_css = {"#gridToolBar": {"padding-bottom": "0px !important",}}
+        custom_css = {"#gridToolBar": {"padding-bottom": "0px !important",},
+                        ".ag-body-viewport-wrapper.ag-layout-normal": {  "overflow-x": "scroll", "overflow-y": "scroll"},
+                        "::-webkit-scrollbar" : {"-webkit-appearance": "none","width": "8px", "height": "8px",},
+                        "::-webkit-scrollbar-thumb" : {"border-radius": "4px", "background-color": "rgba(0,0,0,.5)","box-shadow": "0 0 1px rgba(255,255,255,.5)",
+                        }}
+                            )
     # Save grid state when user makes changes
     if response:
         if response.get('grid_state'):
