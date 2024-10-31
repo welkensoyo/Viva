@@ -11,6 +11,7 @@ report_dict = {
     "Patient Metrics": {'name': 'patient_metrics', 'resize': True, 'icon':'table'},
     "Patient Visits": {'name': 'patients_seen', 'resize': False, 'icon':'table'},
     "New Patients": {'name': 'new_patients', 'resize': False, 'icon':'table'},
+    "Employees": {'name': 'employees', 'resize': True, 'icon':'table'},
     "Collections": {'name': 'collections', 'resize': False, 'icon':'table'},
     "Acuity": {'name': 'acuity', 'resize': False, 'icon':'table'},
     "PDN Payroll": {'name': 'payroll', 'resize': False, 'icon':'table'},
@@ -30,10 +31,12 @@ d_cols = {
     'DAY': 'DATE',
     'CLIENT_ID': 'DISTINCT',
     'USER_ID': 'DISTINCT',
+    'EMPL_ID': 'DISTINCT',
     'CG_ID': 'DISTINCT',
     'CLIENTID': 'DISTINCT',
     'USERID': 'DISTINCT',
     'CGID': 'DISTINCT',
+    'ESTATUS': ['Active','Applicant']
 }
 
 facility_names = ('All', 'Dallas', 'Austin', 'Ft Worth', 'Viva', 'Pediatric', 'Contracts', 'Richardson')
@@ -50,6 +53,7 @@ class API:
         self.schema = 'HH_REPORT_DS.'
         self.where = where
 
+    @cache_resource
     def create_connection(self):
         return connect(
             user='daas_reader@vivapeds.com',

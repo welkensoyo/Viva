@@ -65,12 +65,15 @@ def display_report(report_select, id):
     # gb.configure_grid_options(alwaysShowHorizontalScroll=True, enableRangeSelection=True, pagination=True, paginationPageSize=10000, domLayout='normal')
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)
     expanded_groups = []
+    apply_filter_js = ''
     if state := saved_state.get(report_select, {}) or []:
         expanded_groups = state.pop()
         for c in state:
             if d := d_cols.get(c.get('field')):
                 gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
                                     enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
+                if c.get('filtered'):
+                    apply_filter_js += f""" {{ {c.get('field')}: {c.get('filtered')} }}, """
                 if d == 'DATE':
                     df[c['field']] = df[c['field']].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
                     gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type='dateColumnFilter', filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
@@ -89,6 +92,9 @@ def display_report(report_select, id):
                     gb.configure_column(field=d, filter=False, enableRowGroup=True)
                 if d_cols[d] == 'DISTINCT':
                     gb.configure_column(field=d, filter=True, aggFunc='distinct')
+                if isinstance(d_cols[d], list):
+                    gb.configure_column( field=d, header_name="STATUS", filter="agSetColumnFilter", enableRowGroup=True, rowGroup=True)
+                    apply_filter_js+=f""" {{ {d}: {{filterType:'set', values:['{"','".join(d_cols[d])}'] }}}} """
             elif df[d].dtype in ('int64', 'float64'):
                     gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
             else:
@@ -98,6 +104,7 @@ def display_report(report_select, id):
                 gb.configure_column("WEEK_END", rowGroup=True, enableRowGroup=True)
         if 'YEAR' in df.columns:
             df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
+
 
 
     # In Case you want to autosize the columns instead
@@ -124,6 +131,9 @@ def display_report(report_select, id):
         'distinct': custom_agg_distinct_js,
         'sum2d': custom_agg_sum_js
     }
+    apply_filter_js = JsCode(f"""function(e) {{ e.api.setFilterModel( {apply_filter_js} )}};""")
+    grid_options['onFirstDataRendered'] = apply_filter_js
+
     # if expanded_groups:
     #     grid_options.update({'rowGroupExpansion':{'expandedRowGroupIds': expanded_groups}})
     # Call `load_report()` with the selected report name

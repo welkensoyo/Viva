@@ -7,12 +7,13 @@ def configure_grid_state(options, state):
     groups = state.get('rowGroup',{}).get('groupColIds',[])
     order = state.get('columnOrder',{}).get('orderedColIds',[])
     hidden = state.get('columnVisibility', {}).get('hiddenColIds', [])
+    filtered = state.get('filter',{}).get('filterModel',{})
     fields = {}
     for k in keys:
         if a:= state.get(k[0]):
             a = a[k[1]]
             for c in a:
-                col = c.pop('colId')
+                col = c.pop('colId','')
                 try:
                     fields[col].update(c)
                 except KeyError:
@@ -32,6 +33,8 @@ def configure_grid_state(options, state):
             c['hide'] = True
         else:
             c['hide'] = False
+        if c['field'] in filtered:
+            c['filtered'] = filtered[c['field']]
     options.append(state.get('rowGroupExpansion',{}).get('expandedRowGroupIds',[]))
     return options
 
