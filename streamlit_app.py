@@ -61,6 +61,9 @@ def display_report(report_select, id):
         return
     else:
         df = load_report(report_dict[report_select].get('name'))
+    if state := saved_state.get(report_select, {}) or []:
+        new_column_order = [item['field'] for item in state if isinstance(item, dict)]
+        df = df[new_column_order]
     gb = GridOptionsBuilder.from_dataframe(df)
     # gb.configure_grid_options(alwaysShowHorizontalScroll=True, enableRangeSelection=True, pagination=True, paginationPageSize=10000, domLayout='normal')
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)
@@ -69,17 +72,14 @@ def display_report(report_select, id):
     if state := saved_state.get(report_select, {}) or []:
         expanded_groups = state.pop()
         for c in state:
+            gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'), enableRowGroup=c.get('enableRowGroup', False),
+                                rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
             if d := d_cols.get(c.get('field')):
-                gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
-                                    enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
                 if c.get('filtered'):
                     apply_filter_js += f""" {{ {c.get('field')}: {c.get('filtered')} }}, """
                 if d == 'DATE':
                     df[c['field']] = df[c['field']].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
-                    gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type='dateColumnFilter', filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
-                                        enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
-            else:
-                gb.configure_column(headerName= c.get('headerName', c.get('field')), field=c['field'], type= c['type'], filter= c.get('filter',''), aggFunc=c.get('aggFunc',''), sort=c.get('sort') , enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order',''), hide=c.get('hide', False), width=c.get('width',''))
+                    gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type='dateColumnFilter', filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'), enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
     else:
         for d in df.columns:
             if d in d_cols:
@@ -104,8 +104,6 @@ def display_report(report_select, id):
                 gb.configure_column("WEEK_END", rowGroup=True, enableRowGroup=True)
         if 'YEAR' in df.columns:
             df.sort_values(by=['YEAR', 'MONTH'], ascending=[False, False], inplace=True)
-
-
 
     # In Case you want to autosize the columns instead
     try:

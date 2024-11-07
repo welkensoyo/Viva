@@ -35,6 +35,7 @@ def configure_grid_state(options, state):
             c['hide'] = False
         if c['field'] in filtered:
             c['filtered'] = filtered[c['field']]
+    options = sorted(options, key=lambda x: x['order'])
     options.append(state.get('rowGroupExpansion',{}).get('expandedRowGroupIds',[]))
     return options
 
