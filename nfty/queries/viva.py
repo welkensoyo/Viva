@@ -4,7 +4,7 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
     h.AGENCY_BRANCH_NAME, c.CG_EMPLOYEEID AS USERID, c.CG_FIRSTNAME AS FIRSTNAME, c.CG_LASTNAME AS LASTNAME, c.CG_DISCIPLINENAME as DISCIPLINE,
     CASE 
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','PTA','PTDVN','OTDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
         ELSE 'NON BILLABLE'
     END AS SERVICE_FILTER,
     CASE 
@@ -14,9 +14,9 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN') THEN 'PDN SHIFT LVN'
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'PDN LVN HI TECH'
         WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - LVN (BIPAP)' THEN 'PDN MID TECH - LVN (BIPAP)'
-        WHEN TRIM(sc.SEVICE_CODE) in ('OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
+        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval moderate','OTReEval','OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
         ELSE 'NON BILLABLE'
     END AS SERVICE_CODE,
     COUNT(DISTINCT(s.s_CLIENT_ID)) as PATIENTS
@@ -36,9 +36,9 @@ ORDER BY 3 DESC;''',
     h.AGENCY_BRANCH_NAME, u.CLIENT_ID, u.CLIENT_FIRST_NAME as FIRST_NAME, u.CLIENT_LAST_NAME as LAST_NAME,
     c.CG_EMPLOYEEID AS CG_ID, c.CG_FIRSTNAME AS CG_FIRST_NAME, c.CG_LASTNAME AS CG_LAST_NAME,
     c.CG_DISCIPLINENAME as DISCIPLINE,
-    CASE 
+     CASE 
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','PTA','PTDVN','OTDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
         ELSE 'NON BILLABLE'
     END AS SERVICE_FILTER,
     CASE 
@@ -48,9 +48,9 @@ ORDER BY 3 DESC;''',
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN') THEN 'PDN SHIFT LVN'
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'PDN LVN HI TECH'
         WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - LVN (BIPAP)' THEN 'PDN MID TECH - LVN (BIPAP)'
-        WHEN TRIM(sc.SEVICE_CODE) in ('OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
+        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval moderate','OTReEval','OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
         ELSE 'NON BILLABLE'
     END AS SERVICE_CODE,
     sc.SEVICE_CODE as RAW_SERVICE_CODE,
@@ -90,9 +90,9 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
     SUM(ROUND(s.S_ACTUAL_HOURS / 0.25, 0) * 0.25) as APPROVED_HOURS,
     sc.SERVICE_TYPE,
     s.S_SCHEDULE_STATUS as SCHEDULE_STATUS,
-    CASE 
+     CASE 
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','PTA','PTDVN','OTDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
         ELSE 'NON BILLABLE'
     END AS SERVICE_FILTER,
     CASE 
@@ -102,9 +102,9 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN') THEN 'PDN SHIFT LVN'
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'PDN LVN HI TECH'
         WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - LVN (BIPAP)' THEN 'PDN MID TECH - LVN (BIPAP)'
-        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
+        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval moderate','OTReEval','OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
         ELSE 'NON BILLABLE'
     END AS SERVICE_CODE,
     sc.SEVICE_CODE as RAW_SERVICE_CODE,
@@ -129,9 +129,9 @@ ORDER BY 4 DESC;''',
 SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s.SCHEDULE_DATE,'MON') AS MONTH_ABBR,
     --CAST(DATEADD(DAY, -1 - EXTRACT(DAYOFWEEK FROM s.SCHEDULE_DATE), DATE_TRUNC('DAY', s.SCHEDULE_DATE)) as VARCHAR) AS WEEK_OF,
     h.AGENCY_BRANCH_NAME, c.CG_EMPLOYEEID AS USERID, c.CG_FIRSTNAME AS FIRSTNAME, c.CG_LASTNAME AS LASTNAME, c.CG_DISCIPLINENAME as DISCIPLINE,
-    CASE 
+     CASE 
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','PTA','PTDVN','OTDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
         ELSE 'NON BILLABLE'
     END AS SERVICE_FILTER,
     CASE 
@@ -141,9 +141,9 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN') THEN 'PDN SHIFT LVN'
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'PDN LVN HI TECH'
         WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - LVN (BIPAP)' THEN 'PDN MID TECH - LVN (BIPAP)'
-        WHEN TRIM(sc.SEVICE_CODE) in ('OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
+        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval moderate','OTReEval','OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
         ELSE 'NON BILLABLE'
     END AS SERVICE_CODE,
     COUNT(DISTINCT(s.S_CLIENT_ID)) as PATIENTS
@@ -243,9 +243,9 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
     DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE) AS WEEK_END,
     h.AGENCY_BRANCH_NAME, c.CG_EMPLOYEEID AS USERID, c.CG_FIRSTNAME AS FIRSTNAME, c.CG_LASTNAME AS LASTNAME, c.CG_DISCIPLINENAME as DISCIPLINE,
     sc.SERVICE_TYPE,
-    CASE 
+     CASE 
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','PTA','PTDVN','OTDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
         ELSE 'NON BILLABLE'
     END AS SERVICE_FILTER,
     CASE 
@@ -255,9 +255,9 @@ SELECT YEAR(s.SCHEDULE_DATE) as YEAR, MONTH(S.SCHEDULE_DATE) AS MONTH, TO_CHAR(s
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN') THEN 'PDN SHIFT LVN'
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'PDN LVN HI TECH'
         WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - LVN (BIPAP)' THEN 'PDN MID TECH - LVN (BIPAP)'
-        WHEN TRIM(sc.SEVICE_CODE) in ('OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
-        WHEN TRIM(sc.SEVICE_CODE) in ('STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
+        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval moderate','OTReEval','OTDVN','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit') THEN 'PT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
         ELSE 'NON BILLABLE'
     END AS SERVICE_CODE,
         ROUND(SUM(s.S_REGULARAMOUNT + s.S_OT_AMOUNT + s.S_BONUS_AMOUNT),2) AS PAYROLL
