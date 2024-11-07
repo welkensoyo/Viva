@@ -36,7 +36,6 @@ ORDER BY 3 DESC;''',
     h.AGENCY_BRANCH_NAME, u.CLIENT_ID, u.CLIENT_FIRST_NAME as FIRST_NAME, u.CLIENT_LAST_NAME as LAST_NAME,
     c.CG_EMPLOYEEID AS CG_ID, c.CG_FIRSTNAME AS CG_FIRST_NAME, c.CG_LASTNAME AS CG_LAST_NAME,
     c.CG_DISCIPLINENAME as DISCIPLINE,
-    s.SERVICE_TYPE,
     CASE 
         WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
         WHEN TRIM(sc.SEVICE_CODE) in ('ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
