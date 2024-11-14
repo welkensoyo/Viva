@@ -1,14 +1,14 @@
 import logging, traceback
-import base64
+# import base64
 import csv
 import os
 import bottle
 import xlrd, openpyxl
 from lxml import html
-from nfty.barcodes import BarcodePDF417
+#from nfty.barcodes import BarcodePDF417
 from io import StringIO, BytesIO
-from PIL import Image
-from nfty.docs import Document
+# from PIL import Image
+# from nfty.docs import Document
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 logger = logging.getLogger("AppLogger")
@@ -240,28 +240,28 @@ class Excel():
         return x
 
 
-class FileUpload:
-    def __init__(self, request, client):
-        self.c = client
-        self.request = request
-        self.files = request.files
-        self.header = []
-        self.columns = {}
-        self.filename = None
-        self.file = None
-        self.count = 0
-        self.response = {}
-
-    def license(self):
-        for self.filename, self.file in list(self.files.items()):
-            if x := BarcodePDF417(self.file, save=True).detect():
-                return x
-        return {}
-
-    def process(self):
-        for self.filename, self.file in list(self.files.items()):
-            self.detect()
-        return self.response
+# class FileUpload:
+#     def __init__(self, request, client):
+#         self.c = client
+#         self.request = request
+#         self.files = request.files
+#         self.header = []
+#         self.columns = {}
+#         self.filename = None
+#         self.file = None
+#         self.count = 0
+#         self.response = {}
+#
+#     def license(self):
+#         for self.filename, self.file in list(self.files.items()):
+#             if x := BarcodePDF417(self.file, save=True).detect():
+#                 return x
+#         return {}
+#
+#     def process(self):
+#         for self.filename, self.file in list(self.files.items()):
+#             self.detect()
+#         return self.response
 
     # def onboard(self, ws):
     #     """
@@ -285,40 +285,40 @@ class FileUpload:
     #     self.response = f"Successfully imported {self.count} clients"
     #     return self
 
-    def detect(self):
-        if self.filename == "file":
-            self.response = Document(self.request, self.c).new()
-            return self
-        name, ext = self.filename.rsplit(".", 1)
-        # if ext in ("xls", "xlsx"):
-        #     ws = Excel(self.file.file).wsgen()
-        #     header = ws.__next__()
-        #     if len(fileTypes["enroll"].intersection(set(header))) == 6:
-        #         self.columns = {i: v.lower() for i, v in enumerate(header)}
-        #         self.onboard(ws)
-        #     elif len(fileTypes["enroll_2"].intersection(set(header))) == 6:
-        #         rename = fileTypes["enroll_map"]
-        #         header = [rename.get(h, h) for h in header]
-        #         self.columns = {i: v.lower() for i, v in enumerate(header)}
-        #         self.onboard(ws)
-        # else:
-        self.response = Document(self.request, self.c).upload(self.file)
-        return self
-
-    def logo(self):
-        def resize_image(image, dimensions):
-            i = Image.open(image.file)
-            i.thumbnail(dimensions)
-            return i
-
-        imagedict = {}
-        name, ext = os.path.splitext(self.filename)
-        image = resize_image(self.file, (400, 400))
-        buffer = BytesIO()
-        image.save(buffer, optimize=True, format="PNG")
-        imagedict[name + ".PNG"] = base64.b64encode(buffer.getvalue()).decode()
-        self.response.update(imagedict)
-        return self
+    # def detect(self):
+    #     if self.filename == "file":
+    #         self.response = Document(self.request, self.c).new()
+    #         return self
+    #     name, ext = self.filename.rsplit(".", 1)
+    #     # if ext in ("xls", "xlsx"):
+    #     #     ws = Excel(self.file.file).wsgen()
+    #     #     header = ws.__next__()
+    #     #     if len(fileTypes["enroll"].intersection(set(header))) == 6:
+    #     #         self.columns = {i: v.lower() for i, v in enumerate(header)}
+    #     #         self.onboard(ws)
+    #     #     elif len(fileTypes["enroll_2"].intersection(set(header))) == 6:
+    #     #         rename = fileTypes["enroll_map"]
+    #     #         header = [rename.get(h, h) for h in header]
+    #     #         self.columns = {i: v.lower() for i, v in enumerate(header)}
+    #     #         self.onboard(ws)
+    #     # else:
+    #     self.response = Document(self.request, self.c).upload(self.file)
+    #     return self
+    #
+    # def logo(self):
+    #     def resize_image(image, dimensions):
+    #         i = Image.open(image.file)
+    #         i.thumbnail(dimensions)
+    #         return i
+    #
+    #     imagedict = {}
+    #     name, ext = os.path.splitext(self.filename)
+    #     image = resize_image(self.file, (400, 400))
+    #     buffer = BytesIO()
+    #     image.save(buffer, optimize=True, format="PNG")
+    #     imagedict[name + ".PNG"] = base64.b64encode(buffer.getvalue()).decode()
+    #     self.response.update(imagedict)
+    #     return self
 
 
 
