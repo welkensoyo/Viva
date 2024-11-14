@@ -20,3 +20,7 @@ gevent
 gevent-websocket
 xmltodict
 orjson
+lxml
+xlrd
+pillow
+regex

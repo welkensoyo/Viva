@@ -1,4 +1,6 @@
 import uuid
+from distutils.command.upload import upload
+
 import streamlit as st
 import altair as alt
 import pandas as pd
@@ -12,6 +14,7 @@ import datetime
 from pprint import pprint
 from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css
 from nfty.cache import user_cache
+from tools.process_upload import ProcessFile
 
 @st.cache_data(ttl=60 * 60 * 12)
 def load_report(report='patients_seen', where=None):
@@ -19,6 +22,13 @@ def load_report(report='patients_seen', where=None):
     if report == 'charts':
         x = s.charts()
         return pd.json_normalize(x[0]), pd.json_normalize(x[1]), pd.json_normalize(x[2])
+    if report == 'rollup':
+        df = pd.json_normalize(s.report(report))
+        columns = df.columns.tolist()
+        columns.remove('WEEK_END')
+        columns_sorted = sorted(columns)
+        columns_sorted = ['WEEK_END'] + columns_sorted
+        return df[columns_sorted]
     return pd.json_normalize(s.report(report))
 
 def load_uploaded_file(uploaded_file):
@@ -43,6 +53,7 @@ def u_file():
         df = load_uploaded_file(uploaded_file)
         st.dataframe(df)
         if st.button('Submit'):
+            ProcessFile(uploaded_file).process_upload()
             st.write(upload_file(uploaded_file.name, df))
 
 def display_report(report_select, id):
@@ -50,7 +61,6 @@ def display_report(report_select, id):
     saved_state = {}
     if x:= user_cache(id):
         saved_state = x[0]
-    # Restore saved state if it exists
 
     if report_select in ('Primary and Secondary Payor',):
         col1, col2 = st.columns([2, 2])
@@ -99,7 +109,7 @@ def display_report(report_select, id):
                     gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
             else:
                 gb.configure_column(field=d, filter='agMultiColumnFilter')
-            if d == 'WEEK_END':
+            if d == 'WEEK_END' and report_select not in ('Target VS Staff Hours PDN',):
                 gb.configure_column("YEAR", rowGroup=True, enableRowGroup=True)
                 gb.configure_column("WEEK_END", rowGroup=True, enableRowGroup=True)
         if 'YEAR' in df.columns:

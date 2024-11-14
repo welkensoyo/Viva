@@ -4,6 +4,7 @@ from snowflake.connector import connect, DictCursor
 import arrow
 from nfty.queries.viva import qry
 from streamlit import cache_resource
+import nfty.db as db
 
 report_dict = {
     "Charts": {'name': 'charts', 'resize': False, 'icon':'bar-chart'},
@@ -15,6 +16,7 @@ report_dict = {
     "Collections": {'name': 'collections', 'resize': False, 'icon':'table'},
     "Acuity": {'name': 'acuity', 'resize': False, 'icon':'table'},
     "PDN Payroll": {'name': 'payroll', 'resize': False, 'icon':'table'},
+    'Target VS Staff Hours PDN':{'name': 'rollup', 'resize': True, 'icon':'table'},
     "OT Percentage": {'name': 'ot_percent', 'resize': False, 'icon':'table'},
     "Primary/Secondary Payor": {'name': 'payors', 'resize': True, 'icon':'table'},
     "GPM" : {'name': 'gpm', 'resize': True, 'icon':'table'},
@@ -106,7 +108,13 @@ class API:
         q = qry.get(reportname)
         if reportname == 'charts':
             q = q.format('''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''')
-
+        if reportname == 'rollup':
+            rows = db.fetchreturn(qry['rollup'], 'ROLLUP')
+            output = []
+            for k, v in rows.items():
+                v.update({'WEEK_END': arrow.get(k).datetime})
+                output.append(v)
+            return output
         if not q and not self.where:
             return self.fetchall(qry['patients_seen'])
         if self.where:
