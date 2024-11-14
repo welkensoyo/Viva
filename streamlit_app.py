@@ -1,17 +1,13 @@
 import uuid
-from distutils.command.upload import upload
-
 import streamlit as st
 import altair as alt
 import pandas as pd
-import os
 import json
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode, DataReturnMode
 from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index, facility_names, upload_file
 import extra_streamlit_components as stx
 import streamlit_option_menu as sm
 import datetime
-from pprint import pprint
 from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css
 from nfty.cache import user_cache
 from tools.process_upload import ProcessFile
