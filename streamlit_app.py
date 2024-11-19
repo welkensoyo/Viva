@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import json
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode, GridUpdateMode, DataReturnMode
-from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index, facility_names, upload_file
+from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_year_index, facility_names
 import extra_streamlit_components as stx
 import streamlit_option_menu as sm
 import datetime
@@ -21,6 +21,8 @@ def load_report(report='patients_seen', where=None):
     if report == 'rollup':
         df = pd.json_normalize(s.report(report))
         columns = df.columns.tolist()
+        if not columns:
+            return pd.DataFrame()
         columns.remove('WEEK_END')
         columns_sorted = sorted(columns)
         columns_sorted = ['WEEK_END'] + columns_sorted
@@ -48,9 +50,10 @@ def u_file():
         # }
         df = load_uploaded_file(uploaded_file)
         st.dataframe(df)
-        if st.button('Submit'):
-            ProcessFile(uploaded_file).process_upload()
-            st.write(upload_file(uploaded_file.name, df))
+        if st.button('Process File'):
+            with st.spinner(f'{uploaded_file.name} Processing...'):
+                ProcessFile(uploaded_file).process_upload()
+            st.write(f'{uploaded_file.name} Uploaded.')
 
 def display_report(report_select, id):
     # Read saved grid state from file if it exists

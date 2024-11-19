@@ -112,7 +112,10 @@ class API:
             rows = db.fetchreturn(qry['rollup'], 'ROLLUP')
             output = []
             for k, v in rows.items():
-                v.update({'WEEK_END': arrow.get(k).datetime})
+                if ':' not in k:
+                    continue
+                k, branch = k.split(':')
+                v.update({'WEEK_END': arrow.get(k).datetime, 'AGENCY_BRANCH_NAME': branch})
                 output.append(v)
             return output
         if not q and not self.where:
@@ -137,9 +140,6 @@ def create_month_year_index():
         arrow_obj = arrow_obj.shift(months=1)
 
     return index_dict
-
-def upload_file(name, df):
-    return name
 
 if __name__ == '__main__':
     from pprint import pprint
