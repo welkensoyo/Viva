@@ -8,7 +8,7 @@ from nfty.sflake import API as sflake_API, report_dict, d_cols, create_month_yea
 import extra_streamlit_components as stx
 import streamlit_option_menu as sm
 import datetime
-from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css
+from nfty.aggrid_utils import configure_grid_state, custom_agg_distinct_js, custom_agg_sum_js, custom_css, decimal2
 from nfty.cache import user_cache
 from tools.process_upload import ProcessFile
 
@@ -105,7 +105,7 @@ def display_report(report_select, id):
                     gb.configure_column( field=d, header_name="STATUS", filter="agSetColumnFilter", enableRowGroup=True, rowGroup=True)
                     apply_filter_js+=f""" {{ {d}: {{filterType:'set', values:['{"','".join(d_cols[d])}'] }}}} """
             elif df[d].dtype in ('int64', 'float64'):
-                    gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d')
+                gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d', valueFormatter = decimal2)
             else:
                 gb.configure_column(field=d, filter='agMultiColumnFilter')
             if d == 'WEEK_END' and report_select not in ('Target VS Staff Hours PDN',):

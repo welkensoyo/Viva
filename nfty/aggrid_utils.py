@@ -52,6 +52,16 @@ function customSum(params) {
 }
 """)
 
+decimal2 = JsCode("""
+        function(params) {
+            if (params.value === null || params.value === undefined) {
+                return '';
+            }
+            const value = Number(params.value);
+            return Number.isInteger(value) ? value : value.toFixed(2);
+        }
+    """)
+
 set_state_js = JsCode(f"""
 function setState(stateString) {{
     try {{
