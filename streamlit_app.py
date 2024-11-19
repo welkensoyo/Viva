@@ -53,7 +53,7 @@ def u_file():
         if st.button('Process File'):
             with st.spinner(f'{uploaded_file.name} Processing...'):
                 ProcessFile(uploaded_file).process_upload()
-            st.write(f'{uploaded_file.name} Uploaded.')
+            st.write(f'{uploaded_file.name} Processed Successfully.')
 
 def display_report(report_select, id):
     # Read saved grid state from file if it exists
