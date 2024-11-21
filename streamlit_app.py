@@ -105,7 +105,7 @@ def display_report(report_select, id):
                     gb.configure_column( field=d, header_name="STATUS", filter="agSetColumnFilter", enableRowGroup=True, rowGroup=True)
                     apply_filter_js+=f""" {{ {d}: {{filterType:'set', values:['{"','".join(d_cols[d])}'] }}}} """
             elif df[d].dtype in ('int64', 'float64'):
-                gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d', valueFormatter = decimal2)
+                gb.configure_column(field=d, type='numericColumn', precision=2, filter='agNumberColumnFilter', aggFunc='sum2d', valueFormatter=decimal2)
             else:
                 gb.configure_column(field=d, filter='agMultiColumnFilter')
             if d == 'WEEK_END' and report_select not in ('Target VS Staff Hours PDN',):

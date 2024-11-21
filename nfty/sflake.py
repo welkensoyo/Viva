@@ -110,12 +110,15 @@ class API:
             q = q.format('''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''')
         if reportname == 'rollup':
             rows = db.fetchreturn(qry['rollup'], 'ROLLUP')
+            hours = self.fetchall(qry['weekly_hours'])
+            hours = {f'{arrow.get(k["WEEK_END"]).format("YYYY-MM-DD")}:{k["AGENCY_BRANCH_NAME"]}': {'ACTUAL_HOURS': k['ACTUAL_HOURS']} for k in hours}
             output = []
             for k, v in rows.items():
                 if ':' not in k:
                     continue
-                k, branch = k.split(':')
-                v.update({'WEEK_END': arrow.get(k).datetime, 'AGENCY_BRANCH_NAME': branch})
+                weekend, branch = k.split(':')
+                v.update({'WEEK_END': arrow.get(weekend).datetime, 'AGENCY_BRANCH_NAME': branch})
+                v.update(hours.get(k, {'ACTUAL_HOURS':0}))
                 output.append(v)
             return output
         if not q and not self.where:
