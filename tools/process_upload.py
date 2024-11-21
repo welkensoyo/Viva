@@ -77,9 +77,9 @@ class ProcessFile:
                 if row[i] is not None and row[i + 1] is not None:
                     key_value_pairs.append((row[i], row[i + 1]))
 
-        parsed_dict = {key.upper(): value for key, value in key_value_pairs}
+        parsed_dict = { re.sub(r'[^\w\s]', '', key).strip().upper(): value for key, value in key_value_pairs }
         for k in list(parsed_dict.keys()):
-            if 'WEEK' in k.upper():
+            if 'WEEK' in k:
                 parsed_dict.pop(k, None)
         parsed_dict['WEEK_END'] = date
         try:

@@ -480,7 +480,158 @@ FROM
     JOIN KANTIME_PROD_DB.HH_REPORT_DS.CLIENTMASTER_SVW C on T.ClientID = C.client_id
     JOIN KANTIME_PROD_DB.HH_REPORT_DS.HOMEHEALTHAGENCIESBRANCHLIST_SVW as h ON C.AGENCY_BRANCH_ID = h.AGENCY_BRANCH_ID
     ''',
-    'gpm' : '''
+    "gpm": ''' 
+   with cte1 (
+        LOCATION,
+        CLIENT_ID,
+        HHA_BRANCH_ID,
+        CLIENT_FIRST_NAME,
+        CLIENT_LAST_NAME,
+        PAYER_SOURCE_ID,
+        PATIENT_ID,
+        SCHEDULE_STATUS,
+        SCHEDULE_DATE,
+        DISCIPLINE,
+        SERVICE_NAME,
+        REGULAR_HOURS,
+        REGULAR_PAY_RATE,
+        REGULAR_PAYROLL_AMOUNT,
+        OT_HOURS,
+        OT_PAYROLL_RATE,
+        OT_PAYROLL_AMOUNT,
+        PAYABLE_HOURS,
+        PAYROLL_AMOUNT,
+        EXPECTED_AMOUNT,
+        PROFIT,
+        PROFIT_PERCENT,
+        TERM_PAYER_AMOUNT,
+        IS_TERMINALBILLED,
+        SEC_PAYER_CONTRATE
+    ) as (
+        select
+            B.AGENCY_BRANCH_NAME,
+            SM.S_CLIENT_ID,
+            SM.S_HHA_BRANCH_ID,
+            CM.CLIENT_FIRST_NAME,
+            CM.CLIENT_LAST_NAME,
+            SM.S_PAYER_SOURCE_ID,
+            CM.CLIENT_PATIENT_ID,
+            SM.S_SCHEDULE_STATUS,
+            SCHEDULE_DATE,
+            SC.SERVICE_TYPE,
+            SC.SERVICE_NAME,
+            SM.S_REGULAR_HOURS,
+            SM.S_PAY_RATE,
+            SM.S_REGULARAMOUNT,
+            SM.S_OT_HOURS,
+            SM.S_OT_PAYROLL_RATE,
+            SM.S_OT_PAYROLLAMOUNT,
+            COALESCE(
+                NULLIF(
+                    CASE
+                        WHEN IFNULL(SM.S_PAYBLE_HOURS, '') = '' THEN 0.00
+                        ELSE ROUND(
+                            (
+                                SUBSTR(SM.S_PAYBLE_HOURS, 1, 2) + (SUBSTR(SM.S_PAYBLE_HOURS, 4, 2) / 60)
+                            ),
+                            2
+                        )
+                    END,
+                    0.00
+                ),
+                SM.S_ACTUAL_HOURS,
+                SM.S_PLANNED_HOURS,
+                0
+            ),
+            CASE
+                WHEN IFNULL(SM.IS_SCHEDULE_PAID, FALSE) THEN SM.S_PAYROLLED_AMOUNT
+                ELSE SM.S_COST
+            END,
+            SM.S_CONTRACTUAL_AMOUNT,
+            SM.S_PROFIT_CONTRACTUAL,
+            Sm.S_PROFITPERCENTAGE_EXPECTED,
+            SM.S_TERM_PAYER_AMOUNT,
+            SM.S_IS_TERMINALBILLED,
+            SM.S_SEC_PAYER_CONTRATE
+        from
+            KANTIME_PROD_DB.HH_REPORT_DS.CLIENTMASTER_SVW CM
+            inner join KANTIME_PROD_DB.HH_REPORT_DS.SCHEDULEMASTER_SVW SM on CM.CLIENT_ID = SM.S_CLIENT_ID
+            inner join KANTIME_PROD_DB.HH_REPORT_DS.SERVICECODESMASTER_SVW SC on SM.S_SERVICE_CODE_ID = SC.SERVICE_ID
+            left join KANTIME_PROD_DB.HH_REPORT_DS.HOMEHEALTHAGENCIESBRANCHLIST_SVW B on SM.S_HHA_BRANCH_ID = B.AGENCY_BRANCH_ID
+        where
+            SM.SCHEDULE_DATE between '1/1/2024'and CURRENT_DATE
+            and SM.IS_MISCVISIT = false
+            and SM.IS_CHILD_VISIT = false
+            and SM.S_SCHEDULE_STATUS in (
+                'In_Progress',
+                'Planned',
+                'Approved',
+                'Completed'
+            ) --order by SM.SCHEDULE_DATE
+    ),
+    cte2 as (
+        select
+            P.PS_NAME as PAYER_NAME,
+            cte1.LOCATION,
+            cte1.CLIENT_ID,
+            cte1.HHA_BRANCH_ID,
+            cte1.CLIENT_FIRST_NAME,
+            cte1.CLIENT_LAST_NAME,
+            cte1.PAYER_SOURCE_ID,
+            cte1.PATIENT_ID,
+            cte1.SCHEDULE_STATUS,
+            cte1.SCHEDULE_DATE,
+            cte1.DISCIPLINE,
+            cte1.SERVICE_NAME,
+            CASE
+                WHEN IFNULL(cte1.REGULAR_HOURS, 0.00) = 0.00 THEN IFNULL(cte1.PAYABLE_HOURS, 0.00) - IFNULL(cte1.OT_HOURS, 0.00)
+                ELSE IFNULL(cte1.REGULAR_HOURS, 0.00)
+            END as REGULAR_HOURS,
+            cte1.REGULAR_PAY_RATE,
+            CASE
+                WHEN IFNULL(cte1.REGULAR_PAYROLL_AMOUNT, 0.00) = 0.00 THEN IFNULL(cte1.PAYROLL_AMOUNT, 0.00) - IFNULL(cte1.OT_PAYROLL_AMOUNT, 0.00)
+                ELSE IFNULL(cte1.REGULAR_PAYROLL_AMOUNT, 0.00)
+            END as REGULAR_PAYROLL_AMOUNT,
+            cte1.OT_HOURS,
+            cte1.OT_PAYROLL_RATE,
+            cte1.OT_PAYROLL_AMOUNT,
+            cte1.PAYABLE_HOURS,
+            cte1.PAYROLL_AMOUNT,
+            cte1.EXPECTED_AMOUNT,
+            CASE
+                WHEN IFNULL(cte1.PROFIT, 0.00) = 0.00 THEN IFNULL(cte1.EXPECTED_AMOUNT, 0.00) - IFNULL(cte1.PAYROLL_AMOUNT, 0.00)
+                ELSE IFNULL(cte1.PROFIT, 0.00)
+            END as PROFIT,
+            CASE
+                WHEN IFNULL(cte1.PROFIT_PERCENT, 0.00) = 0.00 THEN CASE
+                    WHEN IFNULL(cte1.EXPECTED_AMOUNT, 0.00) = 0.00 THEN 0.00
+                    ELSE ROUND(
+                        (
+                            (
+                                (
+                                    IFNULL(cte1.EXPECTED_AMOUNT, 0.00) - IFNULL(cte1.PAYROLL_AMOUNT, 0.00)
+                                ) / IFNULL(cte1.EXPECTED_AMOUNT, 0.00)
+                            ) * 100
+                        ),
+                        2
+                    )
+                END
+                ELSE IFNULL(cte1.PROFIT_PERCENT, 0.00)
+            END as PROFIT_PERCENT,
+            cte1.TERM_PAYER_AMOUNT,
+            cte1.IS_TERMINALBILLED,
+            cte1.SEC_PAYER_CONTRATE
+        from
+            cte1
+            inner join KANTIME_PROD_DB.HH_REPORT_DS.PAYMENTSOURCEMASTER_SVW P on cte1.PAYER_SOURCE_ID = P.PS_PAYERSOURCEID
+    )
+select
+    *
+from
+    cte2
+order by
+    SCHEDULE_DATE ''',
+    'gpm_old' : '''
 with cte1 (
         LOCATION,
         CLIENT_ID,
