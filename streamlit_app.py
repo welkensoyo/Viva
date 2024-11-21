@@ -81,8 +81,13 @@ def display_report(report_select, id):
     if state := saved_state.get(report_select, {}) or []:
         expanded_groups = state.pop()
         for c in state:
-            gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'), enableRowGroup=c.get('enableRowGroup', False),
-                                rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
+            if df[c.get('field')].dtype in ('int64', 'float64'):
+                gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
+                                    enableRowGroup=c.get('enableRowGroup', False),rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''), valueFormatter=decimal2)
+
+            else:
+                gb.configure_column(headerName=c.get('headerName', c.get('field')), field=c['field'], type=c['type'], filter=c.get('filter', ''), aggFunc=c.get('aggFunc', ''), sort=c.get('sort'),
+                                    enableRowGroup=c.get('enableRowGroup', False), rowGroup=c.get('rowGroup', False), order=c.get('order', ''), hide=c.get('hide', False), width=c.get('width', ''))
             if d := d_cols.get(c.get('field')):
                 if c.get('filtered'):
                     apply_filter_js += f""" {{ {c.get('field')}: {c.get('filtered')} }}, """
