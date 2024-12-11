@@ -1,11 +1,11 @@
 import logging, traceback
-# import base64
+import base64
 import csv
 import os
 import bottle
 import xlrd, openpyxl
 from lxml import html
-from nfty.barcodes import BarcodePDF417
+# from nfty.barcodes import BarcodePDF417
 from io import StringIO, BytesIO
 from PIL import Image
 from nfty.docs import Document
@@ -252,38 +252,38 @@ class FileUpload:
         self.count = 0
         self.response = {}
 
-    def license(self):
-        for self.filename, self.file in list(self.files.items()):
-            if x := BarcodePDF417(self.file, save=True).detect():
-                return x
-        return {}
+    # def license(self):
+    #     for self.filename, self.file in list(self.files.items()):
+    #         if x := BarcodePDF417(self.file, save=True).detect():
+    #             return x
+    #     return {}
 
     def process(self):
         for self.filename, self.file in list(self.files.items()):
             self.detect()
         return self.response
 
-    def onboard(self, ws):
-        """
-        This takes in an Excel file and with the parent id values, loads users into the system.
-        """
-        parentids = ("id", "clientid", "parentid", "parent")
-        parent = constants.CLIENT_ID_DEFAULT_API
-        for line in ws:
-            meta = {self.columns[i]: v for i, v in enumerate(line) if v}
-            for p in parentids:
-                if meta.get(p):
-                    parent = meta.pop(p)
-                    break
-            if not parent:
-                parent = self.c.id
-            if meta:
-                self.count += 1
-                e = Enroll()
-                e.post(meta, parent=parent, skip=True)
-                e.set_status(status=constants.ONBOARDING_SEND_LINK)
-        self.response = f"Successfully imported {self.count} clients"
-        return self
+    # def onboard(self, ws):
+    #     """
+    #     This takes in an Excel file and with the parent id values, loads users into the system.
+    #     """
+    #     parentids = ("id", "clientid", "parentid", "parent")
+    #     parent = constants.CLIENT_ID_DEFAULT_API
+    #     for line in ws:
+    #         meta = {self.columns[i]: v for i, v in enumerate(line) if v}
+    #         for p in parentids:
+    #             if meta.get(p):
+    #                 parent = meta.pop(p)
+    #                 break
+    #         if not parent:
+    #             parent = self.c.id
+    #         if meta:
+    #             self.count += 1
+    #             e = Enroll()
+    #             e.post(meta, parent=parent, skip=True)
+    #             e.set_status(status=constants.ONBOARDING_SEND_LINK)
+    #     self.response = f"Successfully imported {self.count} clients"
+    #     return self
 
     def detect(self):
         if self.filename == "file":
