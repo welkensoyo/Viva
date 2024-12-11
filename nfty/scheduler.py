@@ -3,9 +3,7 @@ import traceback
 import schedule
 import arrow
 from gevent import sleep, spawn as spawn
-from api._config import env
-import nfty.constants as constants
-from api.api import ws_connections
+
 
 logger = logging.getLogger("AppLogger")
 table = "nfty.scheduler"

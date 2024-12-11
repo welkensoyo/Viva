@@ -16,6 +16,7 @@ psqldsn = dsn.replace('"', "'")
 
 _c = {"empty": True, "_": {}}
 awsconfig = {}
+smtp = {}
 
 # def load():  # load initial config from database
 #     global _c
@@ -53,6 +54,14 @@ beakerconfig = {
     "session.cookie_expires": False,
 }
 
+appconfig = {
+    'SALT' : '$2b$12$FTp8e/eGklyVLMgpp1qiXe',
+    'SALT_SIZE' : 42,
+    'SALT_OFF_SET' : 1,
+    'NUMBER_OF_ITERATIONS' : 20,
+    'AES_MULTIPLE' : 16,
+}
+
 try:
     from gevent import socket
     HOST_NAME = socket.gethostname()
@@ -60,7 +69,10 @@ try:
 except:
     pass
 
-
+paycor = SimpleNamespace(
+    clientid = 'cbe097ae418b0d8b1850',
+    secret = 'lBpKk0yyzZmprMCmqARNxNqBlh0x6ugswhwdQ3AFFQ'
+)
 # os.environ["ANTHROPIC_API_KEY"] = anthropic_key
 _c = {}
 

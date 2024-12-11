@@ -44,7 +44,7 @@ d_cols = {
 facility_names = ('All', 'Dallas', 'Austin', 'Ft Worth', 'Viva', 'Pediatric', 'Contracts', 'Richardson')
 
 class API:
-    def __init__(self, where):
+    def __init__(self, where=None):
         self.conn = connect(
             user='daas_reader@vivapeds.com',
             password='S8cuNRnbWJ',
@@ -145,8 +145,6 @@ def create_month_year_index():
     return index_dict
 
 if __name__ == '__main__':
-    from pprint import pprint
-    x = create_month_year_index()
-    pprint(x)
-    print(list(x.values()))
-    # pprint(s.table_info('CLIENTCENSUSBYDATE_SVW'))
+    x = API()
+    data = x.report('Employee Metrics')
+    print(list(data))

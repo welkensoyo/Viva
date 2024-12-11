@@ -137,7 +137,7 @@ def display_report(report_select, id):
     }
     gb.configure_side_bar(filters_panel=True, columns_panel=True, defaultToolPanel=sidebar['toolPanels'])
     gb.configure_side_bar(sidebar)
-    gb.configure_grid_options(groupDefaultExpanded= len(expanded_groups) or 1)
+    gb.configure_grid_options(groupDefaultExpanded=len(expanded_groups) or 1)
     grid_options = gb.build()
     grid_options['aggFuncs'] = {
         'distinct': custom_agg_distinct_js,
@@ -208,7 +208,7 @@ def display_charts():
     month_map = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
                  7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
     mvals = list(month_map.values())
-    month_mmm_map = create_month_year_index()
+    # month_mmm_map = create_month_year_index()
     # nurses = nurses[nurses['DISCIPLINE'].isin(['RN', 'LVN'])].groupby(nurses.columns.drop('DISCIPLINE').tolist()).size().reset_index().rename(columns={0: 'count'})
     billed = nurses.melt(id_vars='MONTH', value_vars=['HOURS_THIS_YEAR', 'HOURS_LAST_YEAR'])
     ot = nurses.melt(id_vars='MONTH', value_vars=['OT_%_THIS_YEAR', 'OT_%_LAST_YEAR'])

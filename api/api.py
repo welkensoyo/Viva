@@ -2,7 +2,6 @@ from bottle import request
 from nfty.njson import checkuuid, jc, lc
 import uuid
 import logging, traceback
-from api.clients import Client
 from api.users import User, test_users
 from nfty.files import FileUpload
 
