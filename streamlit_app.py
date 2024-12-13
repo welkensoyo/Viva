@@ -71,9 +71,12 @@ def display_report(report_select, id):
     else:
         df = load_report(report_dict[report_select].get('name'))
     if state := saved_state.get(report_select, {}) or []:
-        new_column_order = [item['field'] for item in state if isinstance(item, dict)]
-        valid_column_order = [col for col in new_column_order if col in df.columns]
-        df = df[valid_column_order]
+        try:
+            new_column_order = [item['field'] for item in state if isinstance(item, dict)]
+            valid_column_order = [col for col in new_column_order if col in df.columns]
+            df = df[valid_column_order]
+        except:
+            pass
     gb = GridOptionsBuilder.from_dataframe(df)
     # gb.configure_grid_options(alwaysShowHorizontalScroll=True, enableRangeSelection=True, pagination=True, paginationPageSize=10000, domLayout='normal')
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)
@@ -100,7 +103,7 @@ def display_report(report_select, id):
             if d in d_cols:
                 if d_cols[d] == 'SET':
                     gb.configure_column(field=d, filter='agSetColumnFilter', enableRowGroup=True)
-                if d_cols[d] == 'DATE':
+                if d_cols[d] == 'DATE' or '_DATE' in d:
                     df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
                     gb.configure_column(field=d, type='dateColumnFilter', filter=True)
                 if d_cols[d] == 'NOFILTER':
