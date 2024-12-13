@@ -72,8 +72,8 @@ def display_report(report_select, id):
         df = load_report(report_dict[report_select].get('name'))
     if state := saved_state.get(report_select, {}) or []:
         new_column_order = [item['field'] for item in state if isinstance(item, dict)]
-        print(new_column_order)
-        df = df[new_column_order]
+        valid_column_order = [col for col in new_column_order if col in df.columns]
+        df = df[valid_column_order]
     gb = GridOptionsBuilder.from_dataframe(df)
     # gb.configure_grid_options(alwaysShowHorizontalScroll=True, enableRangeSelection=True, pagination=True, paginationPageSize=10000, domLayout='normal')
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, enablePivot=True, editable=True, enableRangeSelection=True, filterable=True)

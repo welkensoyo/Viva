@@ -8,22 +8,24 @@ from api._config import paycor as config
 
 
 class API:
+    client_id = config.client_id
+    company_id = config.company_id
+
     def __init__(self):
         self.error = None
-        self.pre_url = 'https://apis.paycor.com'
+        self.pre_url = 'https://apis.paycor.com/v1/'
         self.header = {
             'Content-Type': "application/json",
-            'Ocp-Apim-Subscription-Key': '94624d3fedee456b86d51fdc7f89be9a',
-            'Authorization' : 'Bearer lBpKk0yyzZmprMCmqARNxNqBlh0x6ugswhwdQ3AFFQ'
+            'Ocp-Apim-Subscription-Key': '94624d3fedee456b86d51fdc7f89be9a'
         }
         self.token = ''
-        self.session()
 
     def session(self):
         if not self.token:
-            url = 'https://apis.paycor.com/sts/v1/common/token'
-            x = self.transmit(url, meta={}, mode='POST')
-            print(x)
+            url = 'https://apis.paycor.com/sts/v1/common/token?subscription-key=94624d3fedee456b86d51fdc7f89be9a'
+            x = upool.request('POST', url)
+            print(x.status)
+            print(x.data)
             if 'response' in x:
                 self.token = 'Bearer '+x['response']['token']
                 self.header['Authorization'] = self.token
@@ -44,8 +46,16 @@ class API:
         url = self._build_url("employees/hours") + "?" + urlencode(params)
         return self.transmit(url)
 
+    def persons(self):
+        url = self._build_url(f"tenants/{self.client_id}/persons")
+        return self.transmit(url, mode='GET')
+
+    def accounts(self):
+        url = self._build_url(f"legalEntities/{self.company_id}/ats/accounts")
+        return self.transmit(url, mode='GET')
+
     def update_legal_entity_work_location(self, id, data):
-        url = self._build_url(f"legal-entities/{id}/work-locations")
+        url = self._build_url(f"legalIEntities/{id}/work-locations")
         return self.transmit(url, meta=data, mode='POST')
 
     def get_work_location_addresses(self, id):
@@ -60,7 +70,7 @@ class API:
         # Legal Entity Leave Policy
 
     def get_legal_entity_leave_policy(self, id):
-        url = self._build_url(f"legal-entities/{id}/leave-policies")
+        url = self._build_url(f"legalIEntities/{id}/leave-policies")
         return self.transmit(url)
 
         # Employee Time Off Requests
@@ -104,7 +114,7 @@ class API:
         return self.transmit(url)
 
     def get_legal_entity_workers_compensation(self, id):
-        url = self._build_url(f"legal-entities/{id}/workers-compensation")
+        url = self._build_url(f"legalIEntities/{id}/workers-compensation")
         return self.transmit(url)
 
     def get_employee_time_tracking(self, employee_id):
@@ -133,18 +143,19 @@ class API:
         return self.transmit(url, meta=data, mode='PATCH')
 
     def get_legal_entity_onboarding(self, id):
-        url = self._build_url(f"legal-entities/{id}/onboarding")
+        url = self._build_url(f"legalIEntities/{id}/onboarding")
         return self.transmit(url)
 
     def update_legal_entity_onboarding(self, id, data):
-        url = self._build_url(f"legal-entities/{id}/onboarding")
+        url = self._build_url(f"legalIEntities/{id}/onboarding")
         return self.transmit(url, meta=data, mode='PATCH')
 
     def get_legal_entity_benefits(self, id):
-        url = self._build_url(f"legal-entities/{id}/benefits")
+        url = self._build_url(f"legalIEntities/{id}/benefits")
         return self.transmit(url)
 
     def transmit(self, url, meta=None, mode='POST'):
+        print(url)
         if meta:
             response = upool.request(mode, url, headers=self.header, fields=json.dc(meta))
         else:
@@ -163,4 +174,4 @@ class API:
             return self.error
 
 if __name__=='__main__':
-    print(API())
+    print(API().accounts())
