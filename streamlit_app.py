@@ -103,7 +103,7 @@ def display_report(report_select, id):
             if d in d_cols:
                 if d_cols[d] == 'SET':
                     gb.configure_column(field=d, filter='agSetColumnFilter', enableRowGroup=True)
-                if d_cols[d] == 'DATE' or '_DATE' in d:
+                if d_cols[d] == 'DATE':
                     df[d] = df[d].apply(lambda x: x.strftime('%Y-%m-%d') if not pd.isnull(x) else '')
                     gb.configure_column(field=d, type='dateColumnFilter', filter=True)
                 if d_cols[d] == 'NOFILTER':
