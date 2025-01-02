@@ -30,9 +30,11 @@ d_cols = {
     'YEAR_LAST': 'SET',
     'PERCENT_AUTH_USED':'SET',
     'WEEK_END': 'DATE',
+    'WK_END': 'DATE',
     'DAY': 'DATE',
     'HIRE_DATE': 'DATE',
     'FIRST_WORK_DATE': 'DATE',
+    'SCHEDULE_DATE': 'DATE',
     'REHIRED_DATE': 'DATE',
     'TERMINATION_DATE': 'DATE',
     'CLIENT_ID': 'DISTINCT',
@@ -103,8 +105,8 @@ class API:
 
     def charts(self):
         q = qry.get('nurse_hours')
-        nonnurses = q.format('''AND s.S_ACTUAL_END < DATEADD(DAY, -1, DATE_TRUNC('MONTH', CURRENT_DATE)) AND c.CG_DISCIPLINENAME NOT IN ('RN','LVN') ''').replace(", DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE)", '').replace(' AS WEEK_END', '')
-        nurses = q.format('''AND s.S_ACTUAL_END < DATEADD(DAY, -1, DATE_TRUNC('MONTH', CURRENT_DATE)) AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''').replace(", DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE)", '').replace(' AS WEEK_END', '')
+        nonnurses = q.format('''AND s.S_ACTUAL_END < DATEADD(DAY, -1, DATE_TRUNC('MONTH', LAST_DAY(DATEADD(MONTH, -1, CURRENT_DATE)))) AND c.CG_DISCIPLINENAME NOT IN ('RN','LVN') ''').replace(", DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE)", '').replace(' AS WEEK_END', '')
+        nurses = q.format('''AND s.S_ACTUAL_END < DATEADD(DAY, -1, DATE_TRUNC('MONTH', LAST_DAY(DATEADD(MONTH, -1, CURRENT_DATE)))) AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''').replace(", DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE)", '').replace(' AS WEEK_END', '')
         acuity = qry.get('acuity')
         return self.fetchall(nurses), self.fetchall(nonnurses), self.fetchall(acuity)
 
