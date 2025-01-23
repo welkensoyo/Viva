@@ -70,10 +70,10 @@ except:
     pass
 
 paycor = SimpleNamespace(
-    clientid = 'cbe097ae418b0d8b1850',
+    client_id = 'cbe097ae418b0d8b1850',
     secret = 'lBpKk0yyzZmprMCmqARNxNqBlh0x6ugswhwdQ3AFFQ',
     company_id = '202369',
-    client_id = '159254'
+    clientid = '159254'
 )
 # os.environ["ANTHROPIC_API_KEY"] = anthropic_key
 _c = {}

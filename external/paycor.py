@@ -5,7 +5,15 @@ import nfty.njson as json
 import urllib3
 from urllib.parse import urlencode
 from api._config import paycor as config
+import nfty.db as db
 
+access = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjAzNGNkMjVjNDI4ZDFkOTRkM2MzMWY2NGM4NzM1YjA5IiwidHlwIjoiSldUIn0.eyJuYmYiOjE3MzQxMDY3ODAsImV4cCI6MTczNDExMjE4MCwiaXNzIjoiaHR0cHM6Ly9hcGkucGF5Y29yLmNvbS9zdHMvdjIvY29tbW9uIiwiYXVkIjoiY2JlMDk3YWU0MThiMGQ4YjE4NTAiLCJjbGllbnRfaWQiOiJjYmUwOTdhZTQxOGIwZDhiMTg1MCIsInNrZXkiOiJMRWxLeEFBSjlHNkVMUjlCUG9iN0RxLUVFMFhlMFNHellxcXFZbXgtUmIwIiwic2lkIjoiNDZjMjM1NzktZDM2NC00MjdmLTg0MjItM2MxNzM3YmI2ODA2IiwiYXV0aF90aW1lIjoxNzM0MTA5NjIyLCJ2ZXIiOjEsInN1YiI6ImZhZjljYmY1LTU2NzYtNGExYi05OGU4LTNjMzI1MmUwZjFkNyIsImlkcCI6MywicGF5Y29yX3VzZXJpZGVudGl0eSI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsInBheWNvcl90aW1lb3V0IjoyMCwiaXBhZGRyIjoiMTA3LjEyOC4xOTkuMTY5IiwianRpIjoiZTE4YzNhMWYyYzYyMzA5MDA4YWNmZjk0ZjFlNTViMTkiLCJzY29wZSI6WyIzN2Q1OTBhYTc1YjllZjExODhjZjAwMjI0ODhkN2U1NiIsIm9mZmxpbmVfYWNjZXNzIl0sImFtciI6WyJwd2QiXX0.hpGlRUbO-tzbiMxS10l7Q2b5AUOc0d_xsrbIY9u4jJ8fyP_F-4U-6Zbc3JgR_K60JgucJqBciRZz5baBXxx1urmbnngyYWovjbVaDcIF90YKhRgeUBxzw09HsbjhmdI7RMaGzR8Gcy7tjSBjVwk1YoG0Yo_kphkjDqJM_TtvS1IPOVWicgUldfStAEugAcZ64-eu-By0__rVdVTeTAiSa6epE3zC6I3jG90qNkfHpVp7S_OJTbL86bJVpgwpUQ7Cr_vP1nFEI77bf4mFpV5TNIbEN4BlIfghpKwGITaesU3sNm5vNwgUpuF_zUW6tA5tCJav-Mpds6Wx6f4kvcJACw'
+refresh = 'b83a323fc23a8d26ce8e100b83e1633da571c176a317be74cbc5c45149cdd2fa'
+
+qry = {
+    'token' : "SELECT token_data FROM users.tokens WHERE id = '1' ",
+    'upsert': "INSERT INTO users.tokens (id, token_data) VALUES ('1', %s) ON CONFLICT (id) DO UPDATE SET token_data = %s"
+}
 
 class API:
     client_id = config.client_id
@@ -19,6 +27,34 @@ class API:
             'Ocp-Apim-Subscription-Key': '94624d3fedee456b86d51fdc7f89be9a'
         }
         self.token = ''
+        self.auth()
+
+    def auth(self):
+        meta = json.dc(db.fetchreturn(qry['token']))
+        print(meta)
+        if not meta:
+            self.token = access
+            refresh = 'b83a323fc23a8d26ce8e100b83e1633da571c176a317be74cbc5c45149cdd2fa'
+
+        url = 'https://apis.paycor.com/sts/v1/common/token?subscription-key=94624d3fedee456b86d51fdc7f89be9a'
+        header = {
+            'grant_type' : 'refresh_token',
+            'refresh_token' : refresh,
+            'client_id' : config.client_id,
+            'client_secret' : config.secret,
+        }
+        print(header)
+        x = upool.request('POST', url, headers=header)
+        print(x.status)
+        print(x.data.decode())
+        x = json.dc(x.data.decode())
+        if 'access_token' in x:
+            db.execute(qry['upsert'], x.data.decode())
+            self.token = 'Bearer '+x['access_token']
+            self.header['Authorization'] = self.token
+            return True
+        else:
+            return False
 
     def session(self):
         if not self.token:
