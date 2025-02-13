@@ -9,7 +9,8 @@ import nfty.db as db
 report_dict = {
     "Charts": {'name': 'charts', 'resize': False, 'icon':'bar-chart'},
     "Employee Metrics": {'name': 'employee_metrics', 'resize': True, 'icon':'table'},
-    "Patient Metrics": {'name': 'patient_metrics', 'resize': True, 'icon':'table'},
+    "Patient Metrics Nurse": {'name': 'patient_metrics_nurse', 'resize': True, 'icon':'table'},
+    "Patient Metrics Therapy": {'name': 'patient_metrics_therapy', 'resize': True, 'icon':'table'},
     "Patient Visits": {'name': 'patients_seen', 'resize': False, 'icon':'table'},
     "New Patients": {'name': 'new_patients', 'resize': False, 'icon':'table'},
     "Employees": {'name': 'employees', 'resize': True, 'icon':'table'},
@@ -111,7 +112,13 @@ class API:
         return self.fetchall(nurses), self.fetchall(nonnurses), self.fetchall(acuity)
 
     def report(self, reportname):
+        if reportname == 'patient_metrics_nurse':
+            return self.fetchall(qry.get('patient_metrics').format('''AND TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN','PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN', 'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN')'''))
+        if reportname == 'patient_metrics_therapy':
+            return self.fetchall(qry.get('patient_metrics').format('''AND TRIM(sc.SEVICE_CODE) IN ('STFEED','STEval','PTTELE','OT Eval low','PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC','ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval','OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit')'''))
         q = qry.get(reportname)
+        if not q and not self.where:
+            return self.fetchall(qry['patients_seen'])
         if reportname == 'charts':
             q = q.format('''AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''')
         if reportname == 'rollup':
@@ -127,8 +134,6 @@ class API:
                 v.update(hours.get(k, {'ACTUAL_HOURS':0}))
                 output.append(v)
             return output
-        if not q and not self.where:
-            return self.fetchall(qry['patients_seen'])
         if self.where:
             if self.where == 'All':
                 return self.fetchall(q)
