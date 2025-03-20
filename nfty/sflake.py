@@ -13,6 +13,7 @@ report_dict = {
     "Patient Metrics Therapy": {'name': 'patient_metrics_therapy', 'resize': True, 'icon':'table'},
     "Patient Visits": {'name': 'patients_seen', 'resize': False, 'icon':'table'},
     "New Patients": {'name': 'new_patients', 'resize': False, 'icon':'table'},
+    "Missed Visits": {'name': 'missed_visits', 'resize': True, 'icon':'table'},
     "Employees": {'name': 'employees', 'resize': True, 'icon':'table'},
     "Collections": {'name': 'collections', 'resize': False, 'icon':'table'},
     "Acuity": {'name': 'acuity', 'resize': False, 'icon':'table'},

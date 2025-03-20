@@ -840,7 +840,83 @@ GROUP BY h.AGENCY_BRANCH_NAME,c.CG_EMPLOYEEID,c.CG_FIRSTNAME,c.CG_LASTNAME,c.CG_
 c.CG_DISCIPLINENAME,c.CG_EMPLOYMENT_TYPE,c.CG_LOCATIONS,c.CG_LANGUAGE
 ORDER BY c.CG_HIREDDATE DESC NULLS LAST;
 ''',
+    "missed_visits":'''SELECT
+    YEAR(s.SCHEDULE_DATE) as YEAR,
+    MONTH(s.SCHEDULE_DATE) AS MONTH,
+    TO_CHAR(s.SCHEDULE_DATE,'MON') AS MONTH_ABBR,
+    DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE) AS WEEK_END,
+    s.SCHEDULE_DATE,
+    h.AGENCY_BRANCH_NAME,
+    u.CLIENT_ID,
+    u.CLIENT_FIRST_NAME as FIRST_NAME,
+    u.CLIENT_LAST_NAME as LAST_NAME,
+    c.CG_EMPLOYEEID AS CG_ID,
+    c.CG_FIRSTNAME AS CG_FIRST_NAME,
+    c.CG_LASTNAME AS CG_LAST_NAME,
+    c.CG_DISCIPLINENAME as DISCIPLINE,
+    CASE
+        WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Mid Tech - LVN (BIPAP)', 'PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN',
+         'PDN Mid Tech - RN (BIPAP)','PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN','PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN',
+         'PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'NURSE'
+        WHEN TRIM(sc.SEVICE_CODE) in ('STFEED','STEval','PTTELE','OT Eval low','PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN',
+         'OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC',
+         'ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity',
+         'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval',
+         'OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'THERAPY'
+        ELSE 'NON BILLABLE'
+    END AS SERVICE_FILTER,
+    CASE
+        WHEN TRIM(sc.SEVICE_CODE) IN ('PDN RN HITech', 'PDN RN HiTech', 'PDN RN HiTECH', 'PDN Hi Tech - RN') THEN 'PDN RN HI TECH'
+        WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - RN (BIPAP)' THEN 'PDN MID TECH - RN (BIPAP)'
+        WHEN TRIM(sc.SEVICE_CODE) IN ('PDN SHIFT RN', 'PDN Shift RN', 'PDN Shift - RN') THEN 'PDN SHIFT RN'
+        WHEN TRIM(sc.SEVICE_CODE) IN ('PDN Shift LVN', 'PDN Shift LVN ', 'PDN Shift - LVN') THEN 'PDN SHIFT LVN'
+        WHEN TRIM(sc.SEVICE_CODE) IN ('PDN LVN HiTech', 'PDN LVN HiTECH', 'PDN Hi-Tech - LVN') THEN 'PDN LVN HI TECH'
+        WHEN TRIM(sc.SEVICE_CODE) = 'PDN Mid Tech - LVN (BIPAP)' THEN 'PDN MID TECH - LVN (BIPAP)'
+        WHEN TRIM(sc.SEVICE_CODE) in ('OT Eval low','OT Eval moderate','OTReEval','OTDVN','OT Eval','OT Eval low-complexity',
+         'OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit') THEN 'OT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('PTTELE','PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN','PT Assistant','PT Eval',
+         'PT Eval high-complexity', 'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision',
+         'PT Tele Visit','PT Visit') THEN 'PT'
+        WHEN TRIM(sc.SEVICE_CODE) in ('STFEED','STEval','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC',
+         'ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit') THEN 'ST'
+        ELSE 'NON BILLABLE'
+    END AS SERVICE_CODE,
+    sc.SEVICE_CODE as RAW_SERVICE_CODE,
+    s.S_SCHEDULE_STATUS,
+    s.S_MISSEDVISIT_REASONTYPE,
+    s.S_MISSEDVISIT_NOTE
 
+FROM KANTIME_PROD_DB.HH_REPORT_DS.SCHEDULEMASTER_SVW AS s
+JOIN KANTIME_PROD_DB.HH_REPORT_DS.SERVICECODESMASTER_SVW as sc
+    on sc.SERVICE_ID = s.S_SERVICE_CODE_ID
+JOIN KANTIME_PROD_DB.HH_REPORT_DS.CAREGIVERMASTER_SVW as c
+    ON s.S_CAREGIVER_ID = c.CG_EMPLOYEEID
+JOIN KANTIME_PROD_DB.HH_REPORT_DS.CLIENTMASTER_SVW as u
+    ON u.CLIENT_ID = s.S_CLIENT_ID
+JOIN KANTIME_PROD_DB.HH_REPORT_DS.HOMEHEALTHAGENCIESBRANCHLIST_SVW as h
+    ON u.AGENCY_BRANCH_ID = h.AGENCY_BRANCH_ID
+WHERE
+    -- For missed appointments, we assume that the actual end is not recorded.
+    --s.S_ACTUAL_END IS NULL
+    -- And optionally, if there is a specific status for missed appointments, include that:
+    s.S_SCHEDULE_STATUS = 'MissedVisit'
+    AND s.S_WEEKSTART >= DATEADD('month', -24, CURRENT_DATE())
+GROUP BY
+    c.CG_EMPLOYEEID, c.CG_FIRSTNAME, c.CG_LASTNAME, c.CG_DISCIPLINENAME,
+    h.AGENCY_BRANCH_NAME, s.S_SCHEDULE_STATUS,
+    DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE),
+    s.SCHEDULE_DATE,
+    YEAR(s.SCHEDULE_DATE),
+    MONTH(s.SCHEDULE_DATE),
+    TO_CHAR(s.SCHEDULE_DATE,'MON'),
+    u.CLIENT_ID,
+    u.CLIENT_FIRST_NAME,
+    u.CLIENT_LAST_NAME,
+    sc.SERVICE_TYPE,
+    sc.SEVICE_CODE,
+    s.S_MISSEDVISIT_REASONTYPE,
+    s.S_MISSEDVISIT_NOTE
+ORDER BY WEEK_END DESC;''',
     "rollup":''' SELECT meta FROM objects.cache WHERE id = %s '''
 }
 
