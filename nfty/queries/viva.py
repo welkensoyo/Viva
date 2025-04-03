@@ -882,6 +882,7 @@ ORDER BY c.CG_HIREDDATE DESC NULLS LAST;
         ELSE 'NON BILLABLE'
     END AS SERVICE_CODE,
     sc.SEVICE_CODE as RAW_SERVICE_CODE,
+    s.S_PLANNED_HOURS,
     s.S_SCHEDULE_STATUS,
     s.S_MISSEDVISIT_REASONTYPE,
     s.S_MISSEDVISIT_NOTE
@@ -896,10 +897,15 @@ JOIN KANTIME_PROD_DB.HH_REPORT_DS.CLIENTMASTER_SVW as u
 JOIN KANTIME_PROD_DB.HH_REPORT_DS.HOMEHEALTHAGENCIESBRANCHLIST_SVW as h
     ON u.AGENCY_BRANCH_ID = h.AGENCY_BRANCH_ID
 WHERE
+    TRIM(sc.SEVICE_CODE) = ('STFEED','STEval','PTTELE','OT Eval low','PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN',
+         'OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC',
+         'ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity',
+         'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval',
+         'OT Eval low-complexity','OT Eval moderate-complexity','OT Eval high-complexity','OT Re-Eval','OT Visit')
     -- For missed appointments, we assume that the actual end is not recorded.
     --s.S_ACTUAL_END IS NULL
     -- And optionally, if there is a specific status for missed appointments, include that:
-    s.S_SCHEDULE_STATUS = 'MissedVisit'
+    AND s.S_SCHEDULE_STATUS = 'MissedVisit'
     AND s.S_WEEKSTART >= DATEADD('month', -24, CURRENT_DATE())
 GROUP BY
     c.CG_EMPLOYEEID, c.CG_FIRSTNAME, c.CG_LASTNAME, c.CG_DISCIPLINENAME,
