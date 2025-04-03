@@ -897,7 +897,7 @@ JOIN KANTIME_PROD_DB.HH_REPORT_DS.CLIENTMASTER_SVW as u
 JOIN KANTIME_PROD_DB.HH_REPORT_DS.HOMEHEALTHAGENCIESBRANCHLIST_SVW as h
     ON u.AGENCY_BRANCH_ID = h.AGENCY_BRANCH_ID
 WHERE
-    TRIM(sc.SEVICE_CODE) = ('STFEED','STEval','PTTELE','OT Eval low','PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN',
+    TRIM(sc.SEVICE_CODE) IN ('STFEED','STEval','PTTELE','OT Eval low','PT Eval moderate','PTReEval','PT Eval noderate','PTA','PTDVN',
          'OT Eval moderate','OTReEval','OTDVN','ST Eval moderate','STReEval','STFEEDDVN','STDVN','ST Eval','ST EVAL SOC',
          'ST Feeding Eval','ST Feeding Visit','ST Re-Eval','ST Visit','PT Assistant','PT Eval','PT Eval high-complexity',
          'PT Eval moderate-complexity','PT Eval low-complexity','PT Re-Eval','PT Supervision','PT Tele Visit','PT Visit','OT Eval',
