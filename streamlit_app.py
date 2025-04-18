@@ -171,6 +171,7 @@ def display_report(report_select, id):
         height=665,
         width='100%',
         reload_data=True,
+        theme = 'streamlit',
         update_mode = GridUpdateMode.MANUAL,
         data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
         fit_columns_on_grid_load=False if resize else True,
@@ -220,7 +221,6 @@ def display_charts():
     acuity_compared = acuity.melt(id_vars='MONTH_ABBR', value_vars=['HIGH_ACUITY_%', 'PRIOR_YEAR_%'])
     billed['MONTH'] = billed['MONTH'].map(month_map)
     ot['MONTH'] = ot['MONTH'].map(month_map)
-    print(unbilled)
     chart = alt.Chart(billed).encode(x=alt.X('MONTH:O', sort=mvals, title=None), y=alt.Y('value', title='Nurse Billable Hours'), color='variable').mark_line()
     chart += alt.Chart(billed).mark_point().encode(x=alt.X('MONTH:O', sort=mvals, title=None), y=alt.Y('value', title='Nurse Billable Hours'), color='variable')
     chart2 = alt.Chart(ot).encode(x=alt.X('MONTH:O', sort=mvals, title=None), y=alt.Y('value', title='Nurse OT %'), color='variable').mark_line()

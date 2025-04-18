@@ -2,7 +2,7 @@
 import traceback
 from snowflake.connector import connect, DictCursor
 import arrow
-from nfty.queries.viva import qry
+from nfty.queries.vivasf import qry
 from streamlit import cache_resource
 import nfty.db as db
 
@@ -110,7 +110,6 @@ class API:
         nonnurses = q.format('''AND s.S_ACTUAL_END < DATEADD(DAY, -1, DATE_TRUNC('MONTH', LAST_DAY(DATEADD(MONTH, -1, CURRENT_DATE)))) AND c.CG_DISCIPLINENAME NOT IN ('RN','LVN') ''').replace(", DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE)", '').replace(' AS WEEK_END', '')
         nurses = q.format('''AND s.S_ACTUAL_END < DATEADD(DAY, -1, DATE_TRUNC('MONTH', LAST_DAY(DATEADD(MONTH, -1, CURRENT_DATE)))) AND c.CG_DISCIPLINENAME IN ('RN','LVN') ''').replace(", DATEADD('day', 6 - IFF(DAYOFWEEK(s.SCHEDULE_DATE) = 7, 0, DAYOFWEEK(s.SCHEDULE_DATE)), s.SCHEDULE_DATE)", '').replace(' AS WEEK_END', '')
         acuity = qry.get('acuity')
-        print(nurses)
         return self.fetchall(nurses), self.fetchall(nonnurses), self.fetchall(acuity)
 
     def report(self, reportname):
