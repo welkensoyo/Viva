@@ -27,3 +27,4 @@ regex
 boto3
 bigquery
 bq-iterate
+altair
